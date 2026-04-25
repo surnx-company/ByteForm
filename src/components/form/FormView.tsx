@@ -27,7 +27,7 @@ const slideVariants = {
 };
 
 const transition = {
-  y: { type: "spring", stiffness: 400, damping: 35 },
+  y: { type: "spring" as const, stiffness: 400, damping: 35 },
   opacity: { duration: 0.25 },
 };
 
