@@ -6,6 +6,7 @@
 
 @theme inline {
   --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
   --font-heading: var(--font-sans);
 
   /* Byteform custom colors — ivory/wine brand theme (used by FormView) */
