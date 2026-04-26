@@ -61,6 +61,16 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ByteForm brand tokens — used on landing page */
+:root {
+  --brand-ivory: #F7F3EC;
+  --brand-wine: #6B1A2A;
+  --brand-wine-dark: #4A1019;
+  --brand-black: #1C1410;
+  --brand-muted: #7A6A60;
+  --brand-dim: #9A8A80;
+}
+
 * {
   box-sizing: border-box;
 }
