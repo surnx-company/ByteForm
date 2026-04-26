@@ -32,7 +32,7 @@ export function useFormEngine(form: Form, jumpTo?: string): FormEngine {
   const [answers, setAnswers] = useState<Answers>({});
   const [direction, setDirection] = useState<1 | -1>(1);
 
-  const [prevJumpTo, setPrevJumpTo] = useState(jumpTo);
+  const [prevJumpTo, setPrevJumpTo] = useState<string | undefined>(undefined);
 
   const visibleQuestions = useMemo(
     () => form.questions.filter((q) => evaluateCondition(q, answers)),
