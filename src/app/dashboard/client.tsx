@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database";
 import { UserMenu } from "@/components/UserMenu";
+import { generateSlug } from "@/lib/slug";
 
 const W = "#6B1A2A";
 const I = "#F7F3EC";
@@ -43,11 +44,12 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
 
   async function handleCreateForm() {
     setCreating(true);
-    const slug = `form-${Date.now().toString(36)}`;
+    const title = "Untitled Form";
+    const slug = generateSlug(title);
     const res = await fetch("/api/forms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Untitled Form", slug }),
+      body: JSON.stringify({ title, slug }),
     });
     if (res.ok) {
       const form = await res.json();
@@ -257,104 +259,121 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
                   {/* Quick actions */}
                   <div
                     style={{
-                      display: "flex", alignItems: "center", gap: 4,
+                      display: "flex", alignItems: "center", gap: 6,
                       paddingTop: 12, borderTop: `0.5px solid ${WA(0.07)}`,
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
+                    {/* Primary: Edit — takes remaining space */}
                     <a
                       href={`/builder/${form.id}`}
                       style={{
-                        display: "flex", alignItems: "center", gap: 5,
-                        fontSize: 12, color: M, textDecoration: "none",
-                        padding: "5px 10px", borderRadius: 6,
-                        border: `0.5px solid ${WA(0.12)}`,
+                        flex: 1, display: "flex", alignItems: "center",
+                        justifyContent: "center", gap: 6,
+                        fontSize: 12, fontWeight: 500, color: W,
+                        textDecoration: "none",
+                        padding: "7px 0", borderRadius: 7,
+                        background: WA(0.07), border: `0.5px solid ${WA(0.18)}`,
                       }}
                     >
                       <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                        <path d="M8 1.5L9.5 3L4 8.5H2.5V7L8 1.5Z" stroke={M} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M8 1.5L9.5 3L4 8.5H2.5V7L8 1.5Z" stroke={W} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       Edit
                     </a>
 
-                    {form.is_published && (
+                    {/* Secondary: icon-only buttons */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+
+                      {/* Responses */}
                       <a
-                        href={`/f/${form.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/dashboard/${form.id}/responses`}
+                        title={`${responses} response${responses !== 1 ? "s" : ""}`}
                         style={{
-                          display: "flex", alignItems: "center", gap: 5,
-                          fontSize: 12, color: M, textDecoration: "none",
-                          padding: "5px 10px", borderRadius: 6,
+                          display: "flex", alignItems: "center", gap: 4,
+                          padding: "7px 9px", borderRadius: 7,
                           border: `0.5px solid ${WA(0.12)}`,
+                          color: responses > 0 ? W : M,
+                          background: responses > 0 ? WA(0.05) : "transparent",
+                          textDecoration: "none",
                         }}
                       >
                         <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                          <path d="M8 1H10V3M10 1L5.5 5.5M4 2H2C1.45 2 1 2.45 1 3V9C1 9.55 1.45 10 2 10H8C8.55 10 9 9.55 9 9V7" stroke={M} strokeWidth="1.1" strokeLinecap="round" />
+                          <path d="M1 8L3.5 5.5L5.5 7.5L8.5 3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        View live
+                        {responses > 0 && (
+                          <span style={{ fontSize: 11, fontWeight: 600 }}>{responses}</span>
+                        )}
                       </a>
-                    )}
 
-                    <a
-                      href={`/dashboard/${form.id}/responses`}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 5,
-                        fontSize: 12, color: M, textDecoration: "none",
-                        padding: "5px 10px", borderRadius: 6,
-                        border: `0.5px solid ${WA(0.12)}`,
-                      }}
-                    >
-                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                        <path d="M1 8L3.5 5.5L5.5 7.5L8.5 3" stroke={M} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      Responses
-                      {responses > 0 && (
-                        <span style={{
-                          background: WA(0.1), color: W,
-                          fontSize: 10, fontWeight: 600,
-                          padding: "1px 5px", borderRadius: 10,
-                        }}>{responses}</span>
+                      {/* Copy link */}
+                      <button
+                        onClick={() => handleCopyLink(form.slug, form.id)}
+                        title={copiedId === form.id ? "Copied!" : "Copy share link"}
+                        style={{
+                          display: "flex", alignItems: "center",
+                          padding: "7px 9px", borderRadius: 7,
+                          border: `0.5px solid ${WA(0.12)}`,
+                          background: copiedId === form.id ? "rgba(34,197,94,0.08)" : "none",
+                          color: copiedId === form.id ? "#16a34a" : M,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                          <rect x="1" y="3.5" width="6" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.1" />
+                          <path d="M4 3V2C4 1.45 4.45 1 5 1H9C9.55 1 10 1.45 10 2V7C10 7.55 9.55 8 9 8H8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+                        </svg>
+                      </button>
+
+                      {/* View live — only if published */}
+                      {form.is_published && (
+                        <a
+                          href={`/f/${form.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="View live form"
+                          style={{
+                            display: "flex", alignItems: "center",
+                            padding: "7px 9px", borderRadius: 7,
+                            border: `0.5px solid ${WA(0.12)}`,
+                            color: M, textDecoration: "none",
+                          }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                            <path d="M8 1H10V3M10 1L5.5 5.5M4 2H2C1.45 2 1 2.45 1 3V9C1 9.55 1.45 10 2 10H8C8.55 10 9 9.55 9 9V7" stroke={M} strokeWidth="1.1" strokeLinecap="round" />
+                          </svg>
+                        </a>
                       )}
-                    </a>
 
-                    <button
-                      onClick={() => handleCopyLink(form.slug, form.id)}
-                      title="Copy share link"
-                      style={{
-                        display: "flex", alignItems: "center", gap: 5,
-                        fontSize: 12, color: copiedId === form.id ? "#16a34a" : M,
-                        padding: "5px 10px", borderRadius: 6,
-                        border: `0.5px solid ${WA(0.12)}`,
-                        background: "none", cursor: "pointer",
-                      }}
-                    >
-                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                        <rect x="1" y="3.5" width="6" height="7" rx="1.5" stroke={M} strokeWidth="1.1" />
-                        <path d="M4 3V2C4 1.45 4.45 1 5 1H9C9.55 1 10 1.45 10 2V7C10 7.55 9.55 8 9 8H8" stroke={M} strokeWidth="1.1" strokeLinecap="round" />
-                      </svg>
-                      {copiedId === form.id ? "Copied!" : "Copy link"}
-                    </button>
-
-                    {/* Delete — pushed right */}
-                    <button
-                      onClick={() => handleDeleteForm(form.id)}
-                      title="Delete form"
-                      style={{
-                        marginLeft: "auto",
-                        display: "flex", alignItems: "center",
-                        padding: "5px 8px", borderRadius: 6,
-                        border: `0.5px solid transparent`,
-                        background: "none", cursor: "pointer",
-                        color: D,
-                      }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#ef4444"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = D; }}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 3.5H10M4.5 3.5V2.5C4.5 2.22 4.72 2 5 2H7C7.28 2 7.5 2.22 7.5 2.5V3.5M9 3.5V9.5C9 10.05 8.55 10.5 8 10.5H4C3.45 10.5 3 10.05 3 9.5V3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-                      </svg>
-                    </button>
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDeleteForm(form.id)}
+                        title="Delete form"
+                        style={{
+                          display: "flex", alignItems: "center",
+                          padding: "7px 9px", borderRadius: 7,
+                          border: "0.5px solid transparent",
+                          background: "none", cursor: "pointer", color: D,
+                          transition: "color 0.15s, background 0.15s, border-color 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          const el = e.currentTarget as HTMLButtonElement;
+                          el.style.color = "#ef4444";
+                          el.style.background = "rgba(239,68,68,0.06)";
+                          el.style.borderColor = "rgba(239,68,68,0.2)";
+                        }}
+                        onMouseLeave={(e) => {
+                          const el = e.currentTarget as HTMLButtonElement;
+                          el.style.color = D;
+                          el.style.background = "none";
+                          el.style.borderColor = "transparent";
+                        }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 3.5H10M4.5 3.5V2.5C4.5 2.22 4.72 2 5 2H7C7.28 2 7.5 2.22 7.5 2.5V3.5M9 3.5V9.5C9 10.05 8.55 10.5 8 10.5H4C3.45 10.5 3 10.05 3 9.5V3.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

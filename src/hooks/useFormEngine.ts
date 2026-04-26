@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Form, Answers, AnswerValue, Question } from "@/types/form";
 
 export type FormStage = "welcome" | "questions" | "thankYou";
@@ -65,7 +65,7 @@ function validateAnswer(question: Question, value: AnswerValue): boolean {
   return true;
 }
 
-export function useFormEngine(form: Form): FormEngine {
+export function useFormEngine(form: Form, jumpTo?: string): FormEngine {
   const [stage, setStage] = useState<FormStage>("welcome");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
@@ -75,6 +75,24 @@ export function useFormEngine(form: Form): FormEngine {
     () => form.questions.filter((q) => evaluateCondition(q, answers)),
     [form.questions, answers]
   );
+
+  // Sync preview to the builder's selected question / screen
+  useEffect(() => {
+    if (!jumpTo) return;
+    if (jumpTo === "welcome") {
+      setStage("welcome");
+    } else if (jumpTo === "thankyou") {
+      setStage("thankYou");
+    } else {
+      const idx = visibleQuestions.findIndex((q) => q.id === jumpTo);
+      if (idx !== -1) {
+        setStage("questions");
+        setCurrentIndex(idx);
+        setDirection(1);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jumpTo]);
 
   const totalVisible = visibleQuestions.length;
   const currentQuestion = visibleQuestions[currentIndex];
