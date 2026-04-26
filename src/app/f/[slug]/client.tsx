@@ -26,5 +26,9 @@ export function PublicFormClient({ form }: Props) {
     }
   }
 
-  return <FormView form={form} onSubmit={handleSubmit} />;
+  return (
+    <div className="h-screen w-screen">
+      <FormView form={form} onSubmit={handleSubmit} />
+    </div>
+  );
 }

@@ -96,10 +96,10 @@ export function FormView({ form, onSubmit }: Props) {
   }, [stage, startForm, handleSubmit, goPrev]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-bg">
+    <div className="relative h-full w-full overflow-hidden bg-bg">
       {/* Progress bar */}
       {stage === "questions" && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-border">
+        <div className="absolute top-0 left-0 right-0 z-50 h-1 bg-border">
           <motion.div
             className="h-full bg-accent"
             initial={{ width: 0 }}
@@ -342,7 +342,7 @@ export function FormView({ form, onSubmit }: Props) {
 
       {/* Bottom navigation */}
       {stage === "questions" && (
-        <div className="fixed bottom-6 right-6 flex items-center gap-2 z-50">
+        <div className="absolute bottom-6 right-6 flex items-center gap-2 z-50">
           <button
             onClick={goPrev}
             disabled={isFirst}
