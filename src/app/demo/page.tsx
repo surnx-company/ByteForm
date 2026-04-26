@@ -77,7 +77,9 @@ export default function DemoPage() {
       </nav>
 
       {/* Form — full screen, sits below the fixed nav */}
-      <FormView form={demoForm} onSubmit={handleSubmit} />
+      <div className="h-screen w-screen">
+        <FormView form={demoForm} onSubmit={handleSubmit} />
+      </div>
 
       {/* Post-completion CTA — slides up after thank-you screen */}
       {submitted && (
