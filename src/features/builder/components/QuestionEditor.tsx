@@ -22,7 +22,7 @@ interface ThankYouEditorProps {
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">{children}</label>;
+  return <label className="block text-xs font-medium text-[#7A6A60] uppercase tracking-wider mb-1.5">{children}</label>;
 }
 
 function TextInput({
@@ -40,8 +40,8 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm
-        text-foreground placeholder:text-muted-foreground focus:border-ring
+      className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+        text-[#1C1410] placeholder:text-[#7A6A60] focus:border-ring
         focus:ring-1 focus:ring-ring transition-colors"
     />
   );
@@ -64,8 +64,8 @@ function TextArea({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm
-        text-foreground placeholder:text-muted-foreground focus:border-ring
+      className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+        text-[#1C1410] placeholder:text-[#7A6A60] focus:border-ring
         focus:ring-1 focus:ring-ring transition-colors resize-none"
     />
   );
@@ -88,7 +88,7 @@ function Toggle({
         onClick={() => onChange(!checked)}
         className={`
           relative w-9 h-5 rounded-full transition-colors duration-200
-          ${checked ? "bg-accent" : "bg-input"}
+          ${checked ? "bg-[#6B1A2A]" : "bg-[#6B1A2A]/[0.06]"}
         `}
       >
         <span
@@ -99,7 +99,7 @@ function Toggle({
           `}
         />
       </button>
-      <span className="text-sm text-foreground">{label}</span>
+      <span className="text-sm text-[#1C1410]">{label}</span>
     </label>
   );
 }
@@ -119,7 +119,7 @@ function ChoicesEditor({
       <div className="space-y-2">
         {choices.map((choice, i) => (
           <div key={choice.id} className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-5 text-center">{i + 1}</span>
+            <span className="text-xs text-[#7A6A60] w-5 text-center">{i + 1}</span>
             <input
               type="text"
               value={choice.label}
@@ -132,13 +132,13 @@ function ChoicesEditor({
                 };
                 onChange(newChoices);
               }}
-              className="flex-1 px-3 py-1.5 rounded-md border border-input bg-background text-sm
-                text-foreground focus:border-ring focus:ring-1 focus:ring-ring transition-colors"
+              className="flex-1 px-3 py-1.5 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+                text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20 transition-colors"
             />
             <button
               onClick={() => onChange(choices.filter((c) => c.id !== choice.id))}
               disabled={choices.length <= 1}
-              className="p-1 rounded text-muted-foreground hover:text-destructive
+              className="p-1 rounded text-[#7A6A60] hover:text-destructive
                 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -159,7 +159,7 @@ function ChoicesEditor({
             },
           ])
         }
-        className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        className="mt-2 text-xs text-[#7A6A60] hover:text-[#1C1410] transition-colors"
       >
         + Add choice
       </button>
@@ -212,8 +212,8 @@ function ConditionalLogicEditor({
                 conditionalLogic: { ...logic, questionId: e.target.value },
               })
             }
-            className="w-full px-3 py-1.5 rounded-md border border-input bg-background text-sm
-              text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            className="w-full px-3 py-1.5 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+              text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
           >
             {availableQuestions.map((q, i) => (
               <option key={q.id} value={q.id}>
@@ -228,8 +228,8 @@ function ConditionalLogicEditor({
                 conditionalLogic: { ...logic, operator: e.target.value as typeof logic.operator },
               })
             }
-            className="w-full px-3 py-1.5 rounded-md border border-input bg-background text-sm
-              text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            className="w-full px-3 py-1.5 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+              text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
           >
             <option value="equals">equals</option>
             <option value="not_equals">does not equal</option>
@@ -279,8 +279,8 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
             }
             onUpdate(question.id, updates);
           }}
-          className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm
-            text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+          className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+            text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
         >
           {QUESTION_TYPES.map((t) => (
             <option key={t.type} value={t.type}>
@@ -336,8 +336,8 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
               type="number"
               value={question.min ?? 0}
               onChange={(e) => onUpdate(question.id, { min: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm
-                text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+                text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
             />
           </div>
           <div>
@@ -346,8 +346,8 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
               type="number"
               value={question.max ?? 10}
               onChange={(e) => onUpdate(question.id, { max: parseInt(e.target.value) || 10 })}
-              className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm
-                text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+                text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
             />
           </div>
         </div>
@@ -362,8 +362,8 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
             min={3}
             max={10}
             onChange={(e) => onUpdate(question.id, { max: parseInt(e.target.value) || 5 })}
-            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm
-              text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+              text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
           />
         </div>
       )}
