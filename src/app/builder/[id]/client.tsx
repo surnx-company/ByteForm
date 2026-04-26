@@ -205,13 +205,32 @@ export function SaveableFormBuilder({ initialForm }: Props) {
         borderBottom: `0.5px solid ${WA(0.12)}`,
         background: "white", flexShrink: 0,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <a href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <img src="/logo-icon.svg" alt="ByteForm" style={{ height: 26, width: 26 }} />
             <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}>
               <span style={{ ...serif, fontSize: 16, color: B, letterSpacing: "-0.3px" }}>Byte</span>
               <span style={{ ...serif, fontSize: 16, color: W, letterSpacing: "-0.3px" }}>Form</span>
             </div>
+          </a>
+          <div style={{ width: 1, height: 16, background: WA(0.15) }} />
+          <a
+            href="/dashboard"
+            title="Back to your forms"
+            className="builder-back-link"
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "5px 10px 5px 8px", borderRadius: 7,
+              border: `0.5px solid ${WA(0.18)}`,
+              fontSize: 12, color: B, textDecoration: "none",
+              background: "transparent", whiteSpace: "nowrap",
+              transition: "background 0.12s, border-color 0.12s",
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>
+              <path d="M7 2L3 5.5L7 9" stroke={B} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            All forms
           </a>
           <div style={{ width: 1, height: 16, background: WA(0.15) }} />
           <input
@@ -613,6 +632,14 @@ export function SaveableFormBuilder({ initialForm }: Props) {
         @keyframes slideDown {
           from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
           to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .builder-back-link:hover {
+          background: rgba(107,26,42,0.06);
+          border-color: rgba(107,26,42,0.28) !important;
+        }
+        .builder-back-link:focus-visible {
+          outline: 2px solid rgba(107,26,42,0.4);
+          outline-offset: 2px;
         }
       `}</style>
     </div>
