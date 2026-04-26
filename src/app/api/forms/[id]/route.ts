@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { updateFormSchema } from "@/lib/validation/forms";
 
 export async function GET(
   _request: Request,
@@ -35,18 +36,29 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-
-  const update: Record<string, unknown> = {
-    title: body.title,
-    slug: body.slug,
-    welcome_screen: body.welcomeScreen,
-    thank_you_screen: body.thankYouScreen,
-    questions: body.questions,
-  };
-  if (typeof body.isPublished === "boolean") {
-    update.is_published = body.isPublished;
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  const parsed = updateFormSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request body", issues: parsed.error.issues },
+      { status: 400 }
+    );
+  }
+
+  const body = parsed.data;
+  const update: Record<string, unknown> = {};
+  if (body.title !== undefined) update.title = body.title;
+  if (body.slug !== undefined) update.slug = body.slug;
+  if (body.welcomeScreen !== undefined) update.welcome_screen = body.welcomeScreen;
+  if (body.thankYouScreen !== undefined) update.thank_you_screen = body.thankYouScreen;
+  if (body.questions !== undefined) update.questions = body.questions;
+  if (body.isPublished !== undefined) update.is_published = body.isPublished;
 
   const { data, error } = await supabase
     .from("forms")
