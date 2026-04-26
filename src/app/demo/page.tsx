@@ -8,5 +8,9 @@ export default function DemoPage() {
     console.log("Form submitted:", answers);
   }
 
-  return <FormView form={demoForm} onSubmit={handleSubmit} />;
+  return (
+    <div className="h-screen w-screen">
+      <FormView form={demoForm} onSubmit={handleSubmit} />
+    </div>
+  );
 }

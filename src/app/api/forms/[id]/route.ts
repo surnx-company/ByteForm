@@ -37,15 +37,20 @@ export async function PUT(
 
   const body = await request.json();
 
+  const update: Record<string, unknown> = {
+    title: body.title,
+    slug: body.slug,
+    welcome_screen: body.welcomeScreen,
+    thank_you_screen: body.thankYouScreen,
+    questions: body.questions,
+  };
+  if (typeof body.isPublished === "boolean") {
+    update.is_published = body.isPublished;
+  }
+
   const { data, error } = await supabase
     .from("forms")
-    .update({
-      title: body.title,
-      slug: body.slug,
-      welcome_screen: body.welcomeScreen,
-      thank_you_screen: body.thankYouScreen,
-      questions: body.questions,
-    })
+    .update(update)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

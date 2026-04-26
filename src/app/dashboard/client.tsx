@@ -110,10 +110,23 @@ export function DashboardClient({ forms: initialForms, userEmail }: Props) {
                   hover:border-[#4f46e5]/50 transition-colors cursor-pointer"
                 onClick={() => router.push(`/builder/${form.id}`)}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="font-medium text-foreground truncate pr-2">
-                    {form.title}
-                  </h3>
+                <div className="flex items-start justify-between mb-4 gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="font-medium text-foreground truncate">
+                      {form.title}
+                    </h3>
+                    <span
+                      className={`flex-shrink-0 inline-flex items-center px-1.5 py-0.5
+                        rounded text-[10px] font-medium uppercase tracking-wider
+                        ${
+                          form.is_published
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-secondary text-muted-foreground"
+                        }`}
+                    >
+                      {form.is_published ? "Live" : "Draft"}
+                    </span>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -129,20 +142,24 @@ export function DashboardClient({ forms: initialForms, userEmail }: Props) {
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>{(form.questions as unknown[]).length} questions</span>
-                  <span>{"\u00B7"}</span>
+                  <span>{"·"}</span>
                   <span>/{form.slug}</span>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
-                  <a
-                    href={`/f/${form.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-xs text-[#4f46e5] hover:underline"
-                  >
-                    View form
-                  </a>
-                  <span className="text-muted-foreground">{"\u00B7"}</span>
+                  {form.is_published && (
+                    <>
+                      <a
+                        href={`/f/${form.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs text-[#4f46e5] hover:underline"
+                      >
+                        View form
+                      </a>
+                      <span className="text-muted-foreground">{"·"}</span>
+                    </>
+                  )}
                   <a
                     href={`/dashboard/${form.id}/responses`}
                     onClick={(e) => e.stopPropagation()}

@@ -56,6 +56,7 @@ export function useFormBuilder(initialForm?: Form) {
       welcomeScreen: DEFAULT_WELCOME,
       thankYouScreen: DEFAULT_THANKYOU,
       questions: [],
+      isPublished: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -151,6 +152,10 @@ export function useFormBuilder(initialForm?: Form) {
     setForm((f) => ({ ...f, title, updatedAt: new Date().toISOString() }));
   }, []);
 
+  const setPublished = useCallback((isPublished: boolean) => {
+    setForm((f) => ({ ...f, isPublished, updatedAt: new Date().toISOString() }));
+  }, []);
+
   return {
     form,
     selectedId,
@@ -166,5 +171,6 @@ export function useFormBuilder(initialForm?: Form) {
     updateWelcomeScreen,
     updateThankYouScreen,
     updateFormTitle,
+    setPublished,
   };
 }

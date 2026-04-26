@@ -37,6 +37,7 @@ export default async function EditBuilderPage({ params }: Props) {
     welcomeScreen: dbForm.welcome_screen as Form["welcomeScreen"],
     thankYouScreen: dbForm.thank_you_screen as Form["thankYouScreen"],
     questions: dbForm.questions as Form["questions"],
+    isPublished: dbForm.is_published,
     createdAt: dbForm.created_at,
     updatedAt: dbForm.updated_at,
   };

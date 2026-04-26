@@ -34,6 +34,7 @@ export interface Database {
               value: string;
             };
           }>;
+          is_published: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -45,6 +46,7 @@ export interface Database {
           welcome_screen: Record<string, unknown>;
           thank_you_screen: Record<string, unknown>;
           questions: Record<string, unknown>[];
+          is_published?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -56,6 +58,7 @@ export interface Database {
           welcome_screen?: Record<string, unknown>;
           thank_you_screen?: Record<string, unknown>;
           questions?: Record<string, unknown>[];
+          is_published?: boolean;
           updated_at?: string;
         };
       };
