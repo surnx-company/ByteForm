@@ -59,6 +59,7 @@ export interface Form {
   welcomeScreen: WelcomeScreen;
   thankYouScreen: ThankYouScreen;
   questions: Question[];
+  isPublished: boolean;
   createdAt: string;
   updatedAt: string;
 }

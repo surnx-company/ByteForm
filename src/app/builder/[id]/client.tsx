@@ -33,10 +33,12 @@ export function SaveableFormBuilder({ initialForm }: Props) {
     updateWelcomeScreen,
     updateThankYouScreen,
     updateFormTitle,
+    setPublished,
   } = builder;
 
   const saveTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [saving, setSaving] = useState(false);
+  const [publishBusy, setPublishBusy] = useState(false);
 
   const saveForm = useCallback(async () => {
     setSaving(true);
@@ -50,6 +52,7 @@ export function SaveableFormBuilder({ initialForm }: Props) {
           welcomeScreen: form.welcomeScreen,
           thankYouScreen: form.thankYouScreen,
           questions: form.questions,
+          isPublished: form.isPublished,
         }),
       });
     } catch {
@@ -67,6 +70,30 @@ export function SaveableFormBuilder({ initialForm }: Props) {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
   }, [form.title, form.welcomeScreen, form.thankYouScreen, form.questions, saveForm]);
+
+  const togglePublish = useCallback(async () => {
+    const next = !form.isPublished;
+    setPublished(next);
+    setPublishBusy(true);
+    try {
+      await fetch(`/api/forms/${form.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title,
+          slug: form.slug,
+          welcomeScreen: form.welcomeScreen,
+          thankYouScreen: form.thankYouScreen,
+          questions: form.questions,
+          isPublished: next,
+        }),
+      });
+    } catch {
+      setPublished(!next);
+    } finally {
+      setPublishBusy(false);
+    }
+  }, [form, setPublished]);
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
@@ -90,18 +117,32 @@ export function SaveableFormBuilder({ initialForm }: Props) {
           <span className="text-xs text-muted-foreground">
             {saving ? "Saving..." : "Auto-saved"}
           </span>
-          <a
-            href={`/f/${form.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border
-              text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+          <span
+            className={`flex items-center gap-1.5 text-xs font-medium ${
+              form.isPublished ? "text-emerald-500" : "text-muted-foreground"
+            }`}
           >
-            Preview
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M9 3L3 9M9 3H5M9 3V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                form.isPublished ? "bg-emerald-500" : "bg-muted-foreground"
+              }`}
+            />
+            {form.isPublished ? "Published" : "Draft"}
+          </span>
+          {form.isPublished && (
+            <a
+              href={`/f/${form.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border
+                text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+            >
+              View live
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M9 3L3 9M9 3H5M9 3V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+          )}
           <a
             href={`/dashboard/${form.id}/responses`}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border
@@ -109,6 +150,26 @@ export function SaveableFormBuilder({ initialForm }: Props) {
           >
             Responses
           </a>
+          <button
+            type="button"
+            onClick={togglePublish}
+            disabled={publishBusy}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+              transition-colors disabled:opacity-60 disabled:cursor-not-allowed
+              ${
+                form.isPublished
+                  ? "border border-border text-foreground hover:bg-secondary"
+                  : "bg-[#4f46e5] hover:bg-[#6366f1] text-white"
+              }`}
+          >
+            {publishBusy
+              ? form.isPublished
+                ? "Publishing..."
+                : "Unpublishing..."
+              : form.isPublished
+              ? "Unpublish"
+              : "Publish"}
+          </button>
         </div>
       </header>
 

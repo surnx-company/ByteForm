@@ -5,6 +5,7 @@ export const demoForm: Form = {
   userId: "user-1",
   title: "Product Feedback Survey",
   slug: "product-feedback",
+  isPublished: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   welcomeScreen: {
