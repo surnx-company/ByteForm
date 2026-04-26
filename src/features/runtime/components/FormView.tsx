@@ -9,6 +9,7 @@ import { QuestionRenderer } from "./QuestionRenderer";
 interface Props {
   form: Form;
   onSubmit?: (answers: Record<string, unknown>) => void;
+  jumpTo?: string;
 }
 
 const slideVariants = {
@@ -31,8 +32,8 @@ const transition = {
   opacity: { duration: 0.25 },
 };
 
-export function FormView({ form, onSubmit }: Props) {
-  const engine = useFormEngine(form);
+export function FormView({ form, onSubmit, jumpTo }: Props) {
+  const engine = useFormEngine(form, jumpTo);
   const {
     stage,
     currentIndex,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Form, Answers, AnswerValue, Question } from "@/shared/types/form";
 import { evaluateCondition } from "../lib/condition";
 import { validateAnswer } from "../lib/validate";
@@ -26,16 +26,36 @@ interface FormEngine {
   isLast: boolean;
 }
 
-export function useFormEngine(form: Form): FormEngine {
+export function useFormEngine(form: Form, jumpTo?: string): FormEngine {
   const [stage, setStage] = useState<FormStage>("welcome");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [direction, setDirection] = useState<1 | -1>(1);
 
+  const [prevJumpTo, setPrevJumpTo] = useState(jumpTo);
+
   const visibleQuestions = useMemo(
     () => form.questions.filter((q) => evaluateCondition(q, answers)),
     [form.questions, answers]
   );
+
+  if (jumpTo !== prevJumpTo) {
+    setPrevJumpTo(jumpTo);
+    if (jumpTo) {
+      if (jumpTo === "welcome") {
+        setStage("welcome");
+      } else if (jumpTo === "thankyou") {
+        setStage("thankYou");
+      } else {
+        const idx = visibleQuestions.findIndex((q) => q.id === jumpTo);
+        if (idx !== -1) {
+          setStage("questions");
+          setCurrentIndex(idx);
+          setDirection(1);
+        }
+      }
+    }
+  }
 
   const totalVisible = visibleQuestions.length;
   // Clamp the index so live edits in the builder (delete / reorder / hide-by-logic)

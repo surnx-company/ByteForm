@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/shared/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { generateSlug } from "@/shared/lib/slug";
 
 const W = "#6B1A2A";
 const I = "#F7F3EC";
@@ -87,11 +88,12 @@ export default function WelcomePage() {
 
   async function handleStartBuilding() {
     setCreating(true);
-    const slug = `form-${Date.now().toString(36)}`;
+    const title = "Untitled Form";
+    const slug = generateSlug(title);
     const res = await fetch("/api/forms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Untitled Form", slug }),
+      body: JSON.stringify({ title, slug }),
     });
     if (res.ok) {
       const form = await res.json();
