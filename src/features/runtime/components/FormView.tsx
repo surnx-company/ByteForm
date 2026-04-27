@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Form } from "@/shared/types/form";
 import { useFormEngine } from "../hooks/useFormEngine";
@@ -9,9 +9,13 @@ import { PoweredByBadge } from "./PoweredByBadge";
 
 interface Props {
   form: Form;
-  onSubmit?: (answers: Record<string, unknown>) => void;
+  onStart?: () => void;
+  onSubmit?: (answers: Record<string, unknown>) => void | Promise<void>;
   jumpTo?: string;
 }
+
+const DEFAULT_SUBMIT_ERROR =
+  "Something went wrong while submitting your responses. Please try again.";
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -33,7 +37,7 @@ const transition = {
   opacity: { duration: 0.25 },
 };
 
-export function FormView({ form, onSubmit, jumpTo }: Props) {
+export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
   const engine = useFormEngine(form, jumpTo);
   const {
     stage,
@@ -52,21 +56,72 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
     isFirst,
   } = engine;
 
-  const handleSubmit = useCallback(() => {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleStartForm = useCallback(() => {
+    onStart?.();
+    startForm();
+  }, [onStart, startForm]);
+
+  const submitAnswers = useCallback(
+    async (snapshot: Record<string, unknown>): Promise<boolean> => {
+      if (!onSubmit) return true;
+      setIsSubmitting(true);
+      setSubmitError(null);
+      try {
+        await onSubmit(snapshot);
+        return true;
+      } catch (err) {
+        setSubmitError(
+          err instanceof Error && err.message ? err.message : DEFAULT_SUBMIT_ERROR
+        );
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [onSubmit]
+  );
+
+  const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
     if (stage === "questions" && currentIndex === totalVisible - 1 && canAdvance) {
-      onSubmit?.(answers);
+      const ok = await submitAnswers(answers);
+      if (!ok) return;
     }
     goNext();
-  }, [stage, currentIndex, totalVisible, canAdvance, goNext, onSubmit, answers]);
+  }, [
+    isSubmitting,
+    stage,
+    currentIndex,
+    totalVisible,
+    canAdvance,
+    submitAnswers,
+    answers,
+    goNext,
+  ]);
 
   // For auto-advancing question types (multiple choice, yes/no, rating, star)
   // These bypass canAdvance since they've already set a valid answer
-  const handleAutoAdvance = useCallback(() => {
+  const handleAutoAdvance = useCallback(async () => {
+    if (isSubmitting) return;
     if (stage === "questions" && currentIndex === totalVisible - 1) {
-      onSubmit?.(answers);
+      const ok = await submitAnswers(answers);
+      if (!ok) return;
     }
     goNextForce();
-  }, [stage, currentIndex, totalVisible, goNextForce, onSubmit, answers]);
+  }, [
+    isSubmitting,
+    stage,
+    currentIndex,
+    totalVisible,
+    submitAnswers,
+    answers,
+    goNextForce,
+  ]);
+
+  const dismissSubmitError = useCallback(() => setSubmitError(null), []);
 
   // Global keyboard navigation
   useEffect(() => {
@@ -76,7 +131,7 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
 
       if (stage === "welcome" && e.key === "Enter") {
         e.preventDefault();
-        startForm();
+        handleStartForm();
         return;
       }
 
@@ -95,7 +150,7 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [stage, startForm, handleSubmit, goPrev]);
+  }, [stage, handleStartForm, handleSubmit, goPrev]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-bg text-fg">
@@ -150,7 +205,7 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
                 className="mt-10"
               >
                 <button
-                  onClick={startForm}
+                  onClick={handleStartForm}
                   className="group inline-flex items-center gap-3 px-8 py-4 rounded-lg
                     bg-accent hover:bg-accent-hover text-white text-lg font-medium
                     transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
@@ -243,18 +298,18 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
                   currentQuestion.type !== "multiple_choice" && (
                   <button
                     onClick={handleSubmit}
-                    disabled={!canAdvance}
+                    disabled={!canAdvance || isSubmitting}
                     className={`
                       group inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
                       text-sm font-medium transition-all duration-200
                       ${
-                        canAdvance
+                        canAdvance && !isSubmitting
                           ? "bg-accent hover:bg-accent-hover text-white hover:scale-[1.02] active:scale-[0.98]"
                           : "bg-fg-dim/20 text-fg-dim cursor-not-allowed"
                       }
                     `}
                   >
-                    OK
+                    {isSubmitting ? "Sending…" : "OK"}
                     <svg
                       width="14"
                       height="14"
@@ -386,6 +441,75 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
         <PoweredByBadge />
       </div>
 
+      {/* Submission error banner */}
+      <AnimatePresence>
+        {submitError && (
+          <motion.div
+            key="submit-error"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.2 }}
+            role="alert"
+            aria-live="assertive"
+            className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-[min(560px,calc(100%-3rem))]
+              flex items-start gap-3 px-4 py-3 rounded-lg border border-error/30
+              bg-error/10 backdrop-blur-sm shadow-lg"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden
+              className="mt-0.5 shrink-0 text-error"
+            >
+              <path
+                d="M10 6.5V10.5M10 13.5H10.005M3.5 16.5H16.5C17.605 16.5 18.5 15.605 18.5 14.5V5.5C18.5 4.395 17.605 3.5 16.5 3.5H3.5C2.395 3.5 1.5 4.395 1.5 5.5V14.5C1.5 15.605 2.395 16.5 3.5 16.5Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="flex-1 text-sm text-fg leading-relaxed">{submitError}</p>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !canAdvance}
+                className={`
+                  px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200
+                  ${
+                    isSubmitting || !canAdvance
+                      ? "bg-fg-dim/20 text-fg-dim cursor-not-allowed"
+                      : "bg-error text-white hover:opacity-90 active:scale-[0.98]"
+                  }
+                `}
+              >
+                {isSubmitting ? "Retrying…" : "Try again"}
+              </button>
+              <button
+                type="button"
+                onClick={dismissSubmitError}
+                aria-label="Dismiss error"
+                className="p-1 rounded-md text-fg-muted hover:text-fg hover:bg-fg/10
+                  transition-colors duration-200"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path
+                    d="M3 3L11 11M11 3L3 11"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Bottom navigation */}
       {stage === "questions" && (
         <div className="absolute bottom-6 right-6 flex items-center gap-2 z-50">
@@ -408,11 +532,11 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!canAdvance}
+            disabled={!canAdvance || isSubmitting}
             className={`
               p-2.5 rounded-lg border transition-all duration-200
               ${
-                canAdvance
+                canAdvance && !isSubmitting
                   ? "border-border text-fg-muted hover:text-fg hover:border-fg-dim hover:bg-bg-card"
                   : "border-border/50 text-fg-dim/30 cursor-not-allowed"
               }

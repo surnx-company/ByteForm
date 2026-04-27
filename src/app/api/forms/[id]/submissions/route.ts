@@ -93,20 +93,24 @@ export async function POST(
     );
   }
 
-  const { data, error } = await supabase
+  const completedAt = new Date().toISOString();
+  // No `.select()` after insert: respondents are anonymous and the SELECT
+  // policy on `submissions` only allows form owners to read rows. Returning
+  // the inserted row would force a SELECT check that anon users fail, which
+  // surfaces as "new row violates row-level security policy" — even though
+  // the INSERT itself was authorized. The client only needs the status code.
+  const { error } = await supabase
     .from("submissions")
     .insert({
       form_id: id,
       answers: parsed.data.answers,
-      started_at: parsed.data.startedAt || new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
+      started_at: parsed.data.startedAt ?? completedAt,
+      completed_at: completedAt,
+    });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return NextResponse.json({ success: true }, { status: 201 });
 }
