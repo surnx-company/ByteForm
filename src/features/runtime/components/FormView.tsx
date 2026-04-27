@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Form } from "@/shared/types/form";
 import { useFormEngine } from "../hooks/useFormEngine";
 import { QuestionRenderer } from "./QuestionRenderer";
+import { PoweredByBadge } from "./PoweredByBadge";
 
 interface Props {
   form: Form;
@@ -336,10 +337,54 @@ export function FormView({ form, onSubmit, jumpTo }: Props) {
                   {form.thankYouScreen.description}
                 </motion.p>
               )}
+
+              {/* Promo — delayed so it never competes with the thank you moment */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1, duration: 0.5 }}
+                className="mt-12 pt-8 border-t border-fg/10"
+              >
+                <p className="text-fg-dim text-sm mb-3">
+                  Enjoyed filling this out?
+                </p>
+                <a
+                  href="/auth/signup"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
+                    bg-accent hover:bg-accent-hover text-white text-sm font-medium
+                    transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
+                    shadow-md shadow-accent/20"
+                >
+                  Build your own form — it&apos;s free
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    aria-hidden
+                    className="transition-transform duration-200 group-hover:translate-x-0.5"
+                  >
+                    <path
+                      d="M3 7h8M11 7L7.5 3.5M11 7L7.5 10.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </motion.div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Persistent "Made with ByteForm" badge — bottom-left on all screens */}
+      <div className="absolute bottom-6 left-6 z-50">
+        <PoweredByBadge />
+      </div>
 
       {/* Bottom navigation */}
       {stage === "questions" && (
