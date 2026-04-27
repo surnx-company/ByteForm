@@ -438,7 +438,7 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
               <button
                 onClick={cancelDelete}
                 disabled={deleting}
-                className="px-4 py-2 rounded-lg bg-card text-foreground text-[13px] font-medium border border-border hover:bg-accent transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg bg-card text-foreground text-[13px] font-medium border border-border hover:bg-foreground/5 hover:border-foreground/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
