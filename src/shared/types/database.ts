@@ -68,20 +68,20 @@ export interface Database {
           form_id: string;
           answers: Record<string, unknown>;
           started_at: string;
-          completed_at: string;
+          completed_at: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           form_id: string;
-          answers: Record<string, unknown>;
-          started_at: string;
-          completed_at?: string;
+          answers?: Record<string, unknown>;
+          started_at?: string;
+          completed_at?: string | null;
           created_at?: string;
         };
         Update: {
           answers?: Record<string, unknown>;
-          completed_at?: string;
+          completed_at?: string | null;
         };
       };
     };
