@@ -195,7 +195,7 @@ export function useResponsesAnalytics(
       .filter((s) => s.completed_at && s.started_at)
       .map((s) => {
         const start = new Date(s.started_at).getTime();
-        const end = new Date(s.completed_at).getTime();
+        const end = new Date(s.completed_at!).getTime();
         return (end - start) / 1000;
       });
 

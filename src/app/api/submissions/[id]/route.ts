@@ -46,7 +46,7 @@ export async function PATCH(
   // If completed is true in the body (or some other signal), set completed_at.
   // The client can pass a 'completed' flag or we can just infer it.
   // In the two-phase flow, the client calls this when they finish.
-  const isFinal = (raw as any).completed === true;
+  const isFinal = (raw as { completed?: boolean }).completed === true;
   const completedAt = isFinal ? new Date().toISOString() : null;
 
   const { error: rpcError } = await supabase.rpc("update_submission", {

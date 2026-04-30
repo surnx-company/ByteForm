@@ -1,0 +1,42 @@
+$ eslint
+
+/Users/antoniopertuz/Documents/work/byteform/src/app/auth/login/page.tsx
+  185:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/antoniopertuz/Documents/work/byteform/src/app/demo/page.tsx
+  25:25  warning  '_answers' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  49:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/antoniopertuz/Documents/work/byteform/src/app/page.tsx
+  104:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  206:54  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  823:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/antoniopertuz/Documents/work/byteform/src/app/welcome/page.tsx
+  115:6   warning  React Hook useEffect has missing dependencies: 'router' and 'supabase.auth'. Either include them or remove the dependency array                                                                                                                                                          react-hooks/exhaustive-deps
+  172:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/antoniopertuz/Documents/work/byteform/src/features/builder/components/FormBuilderShell.tsx
+  308:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/antoniopertuz/Documents/work/byteform/src/features/builder/components/QuestionEditor.tsx
+  218:41  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/antoniopertuz/Documents/work/byteform/src/features/dashboard/components/DashboardClient.tsx
+  292:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/antoniopertuz/Documents/work/byteform/src/features/runtime/components/questions/Checkboxes.tsx
+  15:56  warning  'onSubmit' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/antoniopertuz/Documents/work/byteform/src/features/runtime/components/questions/FileUpload.tsx
+  22:3  warning  'onSubmit' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/antoniopertuz/Documents/work/byteform/src/features/runtime/hooks/useFormEngine.ts
+  3:42  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/antoniopertuz/Documents/work/byteform/src/shared/components/UserMenu.tsx
+  25:6  warning  React Hook useEffect has a missing dependency: 'supabase.auth'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 15 problems (1 error, 14 warnings)
+
+error: script "lint" exited with code 1

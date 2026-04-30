@@ -200,10 +200,10 @@ export default function Home() {
               <div style={{ textAlign: 'center', padding: '20px 0 12px' }}>
                 <div style={{ fontSize: 32, marginBottom: 16 }}>🎉</div>
                 <h3 style={{ ...serif, fontSize: 22, color: B, fontWeight: 400, marginBottom: 12, lineHeight: 1.3 }}>
-                  You're all set.
+                  You&apos;re all set.
                 </h3>
                 <p style={{ fontSize: 13, color: M, lineHeight: 1.7, marginBottom: 24 }}>
-                  That calm, focused experience? That's what your users will feel every time they fill a ByteForm.
+                  That calm, focused experience? That&apos;s what your users will feel every time they fill a ByteForm.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <Link href="/auth/login?mode=signup" style={{
@@ -293,7 +293,7 @@ export default function Home() {
           Try it yourself
         </p>
         <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, marginBottom: 10 }}>
-          Don't take our word for it.
+          Don&apos;t take our word for it.
         </h2>
         <p style={{ fontSize: 15, color: M, maxWidth: 400, margin: '0 auto 36px', lineHeight: 1.7 }}>
           Click through a real ByteForm below. This is exactly what your users will experience.
@@ -308,7 +308,7 @@ export default function Home() {
                 Thank you. 🎉
               </div>
               <p style={{ fontSize: 14, color: M, lineHeight: 1.7, marginBottom: 24 }}>
-                That's exactly what your respondents will feel — calm, clear, done.
+                That&apos;s exactly what your respondents will feel — calm, clear, done.
               </p>
               <button onClick={() => { setDemoSubmitted(false); setDemoValue('') }} style={{
                 background: 'transparent', color: W, border: `0.5px solid ${WA(0.3)}`,
@@ -321,7 +321,7 @@ export default function Home() {
                 <div style={{ width: '20%', height: '100%', background: W, borderRadius: 1 }} />
               </div>
               <h3 style={{ ...serif, fontSize: 22, color: B, fontWeight: 400, marginBottom: 24, lineHeight: 1.4 }}>
-                What's your biggest challenge with forms right now?
+                What&apos;s your biggest challenge with forms right now?
               </h3>
               <textarea
                 value={demoValue}
@@ -452,10 +452,10 @@ export default function Home() {
             </h2>
             <p style={{ fontSize: 15, color: IA(0.6), lineHeight: 1.78, marginBottom: 28 }}>
               The average form completion rate is 47%. ByteForm users average 91%.
-              That difference isn't a feature — it's revenue.
+              That difference isn&apos;t a feature — it&apos;s revenue.
             </p>
             <div style={{ background: IA(0.08), borderRadius: 10, padding: '20px 24px' }}>
-              <p style={{ fontSize: 13, color: IA(0.6), marginBottom: 4 }}>At 1,000 monthly views, that's</p>
+              <p style={{ fontSize: 13, color: IA(0.6), marginBottom: 4 }}>At 1,000 monthly views, that&apos;s</p>
               <p style={{ ...serif, fontSize: 28, color: I, fontWeight: 400 }}>440 more responses</p>
               <p style={{ fontSize: 13, color: IA(0.5), marginTop: 4 }}>without spending more on traffic.</p>
             </div>
@@ -697,7 +697,7 @@ export default function Home() {
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 52 }}>
             <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, marginBottom: 10 }}>Simple pricing.</h2>
-            <p style={{ fontSize: 15, color: M }}>Start free. Upgrade when you're ready.</p>
+            <p style={{ fontSize: 15, color: M }}>Start free. Upgrade when you&apos;re ready.</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 22, alignItems: 'start' }}>
             {[
@@ -798,7 +798,7 @@ export default function Home() {
           Your users deserve<br />better than a boring form.
         </h2>
         <p style={{ fontSize: 15, color: IA(0.45), maxWidth: 380, margin: '0 auto 40px', lineHeight: 1.75 }}>
-          So do you. Build something that feels as good as the product you're building.
+          So do you. Build something that feels as good as the product you&apos;re building.
         </p>
         <Link href="/auth/login?mode=signup" style={{
           display: 'inline-block', background: I, color: W,
