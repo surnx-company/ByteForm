@@ -83,12 +83,12 @@ export default async function BlogPostPage({ params }: Props) {
       {/* Header */}
       <header className="border-b border-fg/8 bg-bg/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 font-serif text-xl text-fg"
-          >
-            <span>Byte</span>
-            <span className="text-accent">Form</span>
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-icon.svg" alt="ByteForm" className="h-7 w-7" />
+            <span className="font-serif text-[17px] tracking-tight text-fg">
+              Byte<span className="text-accent">Form</span>
+            </span>
           </Link>
 
           <nav className="flex items-center gap-6 text-sm">
@@ -100,9 +100,15 @@ export default async function BlogPostPage({ params }: Props) {
             </Link>
             <Link
               href="/auth/login"
-              className="px-4 py-1.5 rounded-full bg-accent text-ivory text-sm font-medium hover:bg-accent/90 transition-colors"
+              className="text-sm text-fg-dim hover:text-fg transition-colors"
             >
               Sign in
+            </Link>
+            <Link
+              href="/auth/login?mode=signup"
+              className="px-4 py-1.5 rounded-full bg-accent text-[#F7F3EC] text-sm font-medium hover:bg-accent-hover transition-colors"
+            >
+              Start free
             </Link>
           </nav>
         </div>
@@ -167,8 +173,8 @@ export default async function BlogPostPage({ params }: Props) {
             Build your first conversational form in under 2 minutes — free.
           </p>
           <Link
-            href="/auth/signup"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-ivory font-medium hover:bg-accent/90 transition-colors"
+            href="/auth/login?mode=signup"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-[#F7F3EC] font-medium hover:bg-accent-hover transition-colors"
           >
             Start for free
           </Link>
