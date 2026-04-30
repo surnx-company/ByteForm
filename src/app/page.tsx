@@ -108,7 +108,7 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-          {[['Features', '#features'], ['Pricing', '#pricing'], ['Demo', '/demo']].map(([label, href]) => (
+          {[['Features', '#features'], ['Pricing', '#pricing'], ['Blog', '/blog'], ['Demo', '/demo']].map(([label, href]) => (
             <a key={label} href={href}
               style={{ fontSize: 13, color: M, textDecoration: 'none', cursor: 'pointer' }}>
               {label}
