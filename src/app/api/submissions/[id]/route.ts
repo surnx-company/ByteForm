@@ -1,5 +1,67 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
+import { submissionSchema } from "@/shared/lib/validation/forms";
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: submissionId } = await params;
+  const supabase = await createClient();
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = submissionSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request body", issues: parsed.error.issues },
+      { status: 400 }
+    );
+  }
+
+  // We need the form_id for the RPC.
+  // Respondents don't have auth, so we fetch the submission's form_id first.
+  const { data: submission, error: fetchError } = await supabase
+    .from("submissions")
+    .select("form_id, completed_at")
+    .eq("id", submissionId)
+    .single();
+
+  if (fetchError || !submission) {
+    return NextResponse.json({ error: "Submission not found" }, { status: 404 });
+  }
+
+  if (submission.completed_at) {
+    return NextResponse.json(
+      { error: "Submission already completed" },
+      { status: 400 }
+    );
+  }
+
+  // If completed is true in the body (or some other signal), set completed_at.
+  // The client can pass a 'completed' flag or we can just infer it.
+  // In the two-phase flow, the client calls this when they finish.
+  const isFinal = (raw as any).completed === true;
+  const completedAt = isFinal ? new Date().toISOString() : null;
+
+  const { error: rpcError } = await supabase.rpc("update_submission", {
+    p_submission_id: submissionId,
+    p_form_id: submission.form_id,
+    p_answers: parsed.data.answers,
+    p_completed_at: completedAt,
+  });
+
+  if (rpcError) {
+    return NextResponse.json({ error: rpcError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}
 
 export async function DELETE(
   _request: Request,

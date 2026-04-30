@@ -59,6 +59,7 @@ export async function POST(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Handle both old single-phase (if answers present) and new two-phase (if answers missing)
   const parsed = submissionSchema.safeParse(raw);
   if (!parsed.success) {
     return NextResponse.json(
@@ -67,6 +68,30 @@ export async function POST(
     );
   }
 
+  // If answers are provided, this is a legacy or final single-phase submission.
+  // However, we want to move towards two-phase.
+  // For now, if answers are empty, we treat it as "start".
+  const hasAnswers = Object.keys(parsed.data.answers).length > 0;
+
+  if (!hasAnswers) {
+    // Phase 1: Start submission
+    const { data: submissionId, error: rpcError } = await supabase.rpc(
+      "start_submission",
+      {
+        p_form_id: id,
+        p_started_at: parsed.data.startedAt ?? new Date().toISOString(),
+      }
+    );
+
+    if (rpcError) {
+      const status = rpcError.message === "form_not_published" ? 403 : 500;
+      return NextResponse.json({ error: rpcError.message }, { status });
+    }
+
+    return NextResponse.json({ id: submissionId }, { status: 201 });
+  }
+
+  // Legacy/Single-phase path (optional: we could deprecate this and force two-phase)
   const { data: form, error: formError } = await supabase
     .from("forms")
     .select("questions, is_published")
@@ -94,23 +119,28 @@ export async function POST(
   }
 
   const completedAt = new Date().toISOString();
-  // No `.select()` after insert: respondents are anonymous and the SELECT
-  // policy on `submissions` only allows form owners to read rows. Returning
-  // the inserted row would force a SELECT check that anon users fail, which
-  // surfaces as "new row violates row-level security policy" — even though
-  // the INSERT itself was authorized. The client only needs the status code.
-  const { error } = await supabase
-    .from("submissions")
-    .insert({
-      form_id: id,
-      answers: parsed.data.answers,
-      started_at: parsed.data.startedAt ?? completedAt,
-      completed_at: completedAt,
-    });
+  const { data: submissionId, error: insertError } = await supabase.rpc(
+    "start_submission",
+    {
+      p_form_id: id,
+      p_started_at: parsed.data.startedAt ?? completedAt,
+    }
+  );
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (insertError) {
+    return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true }, { status: 201 });
+  const { error: updateError } = await supabase.rpc("update_submission", {
+    p_submission_id: submissionId,
+    p_form_id: id,
+    p_answers: parsed.data.answers,
+    p_completed_at: completedAt,
+  });
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, id: submissionId }, { status: 201 });
 }
