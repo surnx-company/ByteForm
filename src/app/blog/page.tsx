@@ -79,16 +79,16 @@ export default function BlogIndexPage() {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/blog" className="text-accent font-medium">
+          <nav className="flex items-center gap-4 text-sm">
+            <Link href="/blog" className="hidden sm:block text-accent font-medium">
               Blog
             </Link>
-            <Link href="/demo" className="text-fg-dim hover:text-fg transition-colors">
+            <Link href="/demo" className="hidden sm:block text-fg-dim hover:text-fg transition-colors">
               Demo
             </Link>
             <Link
               href="/auth/login"
-              className="text-sm text-fg-dim hover:text-fg transition-colors"
+              className="hidden sm:block text-fg-dim hover:text-fg transition-colors"
             >
               Sign in
             </Link>

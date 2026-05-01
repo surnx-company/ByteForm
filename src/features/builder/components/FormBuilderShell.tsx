@@ -196,6 +196,28 @@ export function SaveableFormBuilder({ initialForm }: Props) {
       className="h-screen flex flex-col overflow-hidden"
       style={{ background: I, color: B }}
     >
+      {/* Mobile gate — builder requires a larger screen */}
+      <div className="md:hidden fixed inset-0 z-[999] bg-bg flex flex-col items-center justify-center text-center px-8">
+        <div className="w-14 h-14 rounded-2xl bg-accent/8 border border-accent/15 flex items-center justify-center mb-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <rect x="2" y="4" width="20" height="14" rx="2" stroke={W} strokeWidth="1.5" />
+            <path d="M8 22h8M12 18v4" stroke={W} strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+        <h1 className="font-serif text-2xl text-fg font-normal mb-3">
+          Open on a larger screen
+        </h1>
+        <p className="text-sm text-fg-muted leading-relaxed max-w-xs mb-8">
+          The form builder works best on a desktop or laptop. Your forms and responses are fully accessible on any device.
+        </p>
+        <a
+          href="/dashboard"
+          className="text-sm text-[#F7F3EC] bg-accent px-6 py-2.5 rounded-lg no-underline hover:bg-accent-hover transition-colors"
+        >
+          Back to dashboard
+        </a>
+      </div>
+
       {/* Post-publish toast */}
       {liveToast && (
         <div

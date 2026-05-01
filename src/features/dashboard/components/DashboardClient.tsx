@@ -48,7 +48,7 @@ function FormCardInner({ form, responses, copied, onOpen, onDelete, onCopyLink }
 
   return (
     <div
-      className="dashboard-form-card"
+      className="dashboard-form-card flex flex-col"
       onClick={handleOpen}
       style={{
         background: "white", borderRadius: 12,
@@ -57,57 +57,79 @@ function FormCardInner({ form, responses, copied, onOpen, onDelete, onCopyLink }
         cursor: "pointer",
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+      {/* Title row + status badge */}
+      <div className="flex items-start justify-between gap-2 mb-3">
         <h3 style={{
           fontSize: 14, fontWeight: 500, color: B,
-          margin: 0, flex: 1, paddingRight: 10,
+          margin: 0, flex: 1, minWidth: 0,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>
           {form.title}
         </h3>
-        <span style={{
-          fontSize: 11, fontWeight: 500, flexShrink: 0,
-          padding: "3px 8px", borderRadius: 20,
-          background: form.is_published ? "rgba(34,197,94,0.1)" : WA(0.06),
-          color: form.is_published ? "#16a34a" : M,
-          border: form.is_published ? "0.5px solid rgba(34,197,94,0.25)" : `0.5px solid ${WA(0.12)}`,
-        }}>
-          {form.is_published ? "Live" : "Draft"}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {form.is_published && (
+            <a
+              href={`/f/${form.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={stopPropagation}
+              title="View live form"
+              style={{
+                display: "flex", alignItems: "center",
+                padding: "3px 7px", borderRadius: 20,
+                fontSize: 11, color: M, textDecoration: "none",
+                border: `0.5px solid ${WA(0.12)}`,
+              }}
+            >
+              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden>
+                <path d="M7.5 1H9V2.5M9 1L5 5M3.5 2H2C1.45 2 1 2.45 1 3V8C1 8.55 1.45 9 2 9H7C7.55 9 8 8.55 8 8V6.5" stroke={M} strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+            </a>
+          )}
+          <span style={{
+            fontSize: 11, fontWeight: 500,
+            padding: "3px 8px", borderRadius: 20,
+            background: form.is_published ? "rgba(34,197,94,0.1)" : WA(0.06),
+            color: form.is_published ? "#16a34a" : M,
+            border: form.is_published ? "0.5px solid rgba(34,197,94,0.25)" : `0.5px solid ${WA(0.12)}`,
+          }}>
+            {form.is_published ? "Live" : "Draft"}
+          </span>
+        </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+      {/* Stats row */}
+      <div className="flex items-center gap-3 flex-wrap mb-4" style={{ fontSize: 12 }}>
+        <div className="flex items-center gap-1">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M1 10L4.5 6.5L7 9L11 4" stroke={M} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span style={{ fontSize: 12, color: B, fontWeight: 500 }}>{responses}</span>
-          <span style={{ fontSize: 12, color: M }}>response{responses !== 1 ? "s" : ""}</span>
+          <span style={{ color: B, fontWeight: 500 }}>{responses}</span>
+          <span style={{ color: M }}>response{responses !== 1 ? "s" : ""}</span>
         </div>
-        <span style={{ fontSize: 12, color: D }}>·</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <span style={{ color: D }}>·</span>
+        <div className="flex items-center gap-1">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <rect x="1" y="2" width="11" height="9" rx="2" stroke={M} strokeWidth="1.2" />
             <path d="M4 5.5h5M4 8h3" stroke={M} strokeWidth="1.2" strokeLinecap="round" />
           </svg>
-          <span style={{ fontSize: 12, color: B, fontWeight: 500 }}>{questionCount}</span>
-          <span style={{ fontSize: 12, color: M }}>question{questionCount !== 1 ? "s" : ""}</span>
+          <span style={{ color: B, fontWeight: 500 }}>{questionCount}</span>
+          <span style={{ color: M }}>question{questionCount !== 1 ? "s" : ""}</span>
         </div>
-        <span style={{ fontSize: 12, color: D }}>·</span>
-        <span style={{ fontSize: 12, color: M }}>{timeAgo(form.updated_at)}</span>
+        <span style={{ color: D }}>·</span>
+        <span style={{ color: M }}>{timeAgo(form.updated_at)}</span>
       </div>
 
+      {/* Footer actions — always 4 items so all cards align */}
       <div
-        style={{
-          display: "flex", alignItems: "center", gap: 4,
-          paddingTop: 12, borderTop: `0.5px solid ${WA(0.07)}`,
-        }}
+        className="flex items-center gap-1 flex-wrap mt-auto pt-3"
+        style={{ borderTop: `0.5px solid ${WA(0.07)}` }}
         onClick={stopPropagation}
       >
         <Link
           href={`/builder/${form.id}`}
+          className="dashboard-card-action flex items-center gap-1"
           style={{
-            display: "flex", alignItems: "center", gap: 5,
             fontSize: 12, color: M, textDecoration: "none",
             padding: "5px 10px", borderRadius: 6,
             border: `0.5px solid ${WA(0.12)}`,
@@ -119,29 +141,10 @@ function FormCardInner({ form, responses, copied, onOpen, onDelete, onCopyLink }
           Edit
         </Link>
 
-        {form.is_published && (
-          <a
-            href={`/f/${form.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex", alignItems: "center", gap: 5,
-              fontSize: 12, color: M, textDecoration: "none",
-              padding: "5px 10px", borderRadius: 6,
-              border: `0.5px solid ${WA(0.12)}`,
-            }}
-          >
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <path d="M8 1H10V3M10 1L5.5 5.5M4 2H2C1.45 2 1 2.45 1 3V9C1 9.55 1.45 10 2 10H8C8.55 10 9 9.55 9 9V7" stroke={M} strokeWidth="1.1" strokeLinecap="round" />
-            </svg>
-            View live
-          </a>
-        )}
-
         <Link
           href={`/dashboard/${form.id}/responses`}
+          className="dashboard-card-action flex items-center gap-1"
           style={{
-            display: "flex", alignItems: "center", gap: 5,
             fontSize: 12, color: M, textDecoration: "none",
             padding: "5px 10px", borderRadius: 6,
             border: `0.5px solid ${WA(0.12)}`,
@@ -163,9 +166,8 @@ function FormCardInner({ form, responses, copied, onOpen, onDelete, onCopyLink }
         <button
           onClick={handleCopy}
           title="Copy share link"
-          className="dashboard-card-action"
+          className="dashboard-card-action flex items-center gap-1"
           style={{
-            display: "flex", alignItems: "center", gap: 5,
             fontSize: 12, color: copied ? "#16a34a" : M,
             padding: "5px 10px", borderRadius: 6,
             border: `0.5px solid ${WA(0.12)}`,
@@ -182,10 +184,8 @@ function FormCardInner({ form, responses, copied, onOpen, onDelete, onCopyLink }
         <button
           onClick={handleDelete}
           title="Delete form"
-          className="dashboard-card-delete"
+          className="dashboard-card-delete flex items-center ml-auto"
           style={{
-            marginLeft: "auto",
-            display: "flex", alignItems: "center",
             padding: "5px 8px", borderRadius: 6,
             border: `0.5px solid transparent`,
             background: "none", cursor: "pointer",
@@ -283,12 +283,10 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
   return (
     <div style={{ minHeight: "100vh", background: I, fontFamily: "var(--font-sans)", color: B }}>
 
-      <header style={{
-        borderBottom: `0.5px solid ${WA(0.1)}`,
-        background: "white",
-      }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+      <header style={{ borderBottom: `0.5px solid ${WA(0.1)}`, background: "white" }}>
+        <div className="max-w-[1100px] mx-auto px-5 md:px-8 h-[60px] flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 no-underline">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-icon.svg" alt="ByteForm" style={{ height: 30, width: 30 }} />
             <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}>
               <span style={{ ...serif, fontSize: 18, color: B, letterSpacing: "-0.3px" }}>Byte</span>
@@ -299,9 +297,9 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
         </div>
       </header>
 
-      <main style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 32px" }}>
+      <main className="max-w-[1100px] mx-auto px-5 md:px-8 py-8 md:py-10">
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+        <div className="flex items-center justify-between gap-4 mb-8">
           <div>
             <h1 style={{ ...serif, fontSize: 28, fontWeight: 400, color: B, letterSpacing: "-0.5px", margin: "0 0 4px" }}>
               Your forms
@@ -313,8 +311,8 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
           <button
             onClick={handleCreateForm}
             disabled={creating}
+            className="flex items-center gap-2 shrink-0"
             style={{
-              display: "flex", alignItems: "center", gap: 8,
               padding: "10px 20px", borderRadius: 8,
               background: creating ? WA(0.5) : W,
               color: I, fontSize: 13, fontWeight: 500,
@@ -329,20 +327,16 @@ export function DashboardClient({ forms: initialForms, responseCounts }: Props) 
         </div>
 
         {forms.length > 0 && (
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 1, marginBottom: 32,
-            borderRadius: 12, overflow: "hidden",
-            border: `0.5px solid ${WA(0.1)}`,
-          }}>
+          <div
+            className="grid grid-cols-3 mb-8 rounded-xl overflow-hidden"
+            style={{ gap: 1, border: `0.5px solid ${WA(0.1)}` }}
+          >
             {[
               { label: "Total forms", value: forms.length },
-              { label: "Total responses", value: totalResponses },
+              { label: "Responses", value: totalResponses },
               { label: "Published", value: publishedCount },
             ].map(({ label, value }) => (
-              <div key={label} style={{
-                background: "white", padding: "18px 24px",
-              }}>
+              <div key={label} className="bg-white px-4 py-4 md:px-6 md:py-5">
                 <div style={{ ...serif, fontSize: 26, color: B, fontWeight: 400, letterSpacing: "-0.5px", marginBottom: 2 }}>
                   {value}
                 </div>

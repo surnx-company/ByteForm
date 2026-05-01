@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+// Color helpers used only for runtime-computed inline styles (progress bars, selected state)
 const W = '#6B1A2A'
 const I = '#F7F3EC'
 const B = '#1C1410'
@@ -10,7 +11,6 @@ const M = '#7A6A60'
 const D = '#9A8A80'
 const WA = (a: number) => `rgba(107,26,42,${a})`
 const IA = (a: number) => `rgba(247,243,236,${a})`
-
 const serif = { fontFamily: 'var(--font-serif)' } as const
 
 const demoQuestions = [
@@ -55,198 +55,188 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [demoValue, setDemoValue] = useState('')
   const [demoSubmitted, setDemoSubmitted] = useState(false)
-
-  // Scroll-aware nav
   const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 10) }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Hero interactive demo
+  // Close menu on route change / resize
+  useEffect(() => {
+    if (menuOpen) document.body.style.overflow = 'hidden'
+    else document.body.style.overflow = ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
+
   const [heroStep, setHeroStep] = useState(0)
   const [heroAnswers, setHeroAnswers] = useState<(string | null)[]>([null, null, null])
   const heroDone = heroStep >= demoQuestions.length
-  const heroProgress = heroDone ? 100 : Math.round(((heroStep) / demoQuestions.length) * 100)
+  const heroProgress = heroDone ? 100 : Math.round((heroStep / demoQuestions.length) * 100)
   const currentAnswer = heroAnswers[heroStep] ?? null
 
   function heroSelect(opt: string) {
     setHeroAnswers(prev => prev.map((a, i) => i === heroStep ? opt : a))
   }
-  function heroNext() {
-    if (currentAnswer) setHeroStep(s => s + 1)
-  }
-  function heroBack() {
-    setHeroStep(s => Math.max(0, s - 1))
-  }
-  function heroReset() {
-    setHeroStep(0)
-    setHeroAnswers([null, null, null])
-  }
+  function heroNext() { if (currentAnswer) setHeroStep(s => s + 1) }
+  function heroBack() { setHeroStep(s => Math.max(0, s - 1)) }
+  function heroReset() { setHeroStep(0); setHeroAnswers([null, null, null]) }
+
+  const navLinks = [
+    ['Features', '#features'],
+    ['Pricing', '#pricing'],
+    ['Blog', '/blog'],
+    ['Demo', '/demo'],
+  ] as const
 
   return (
-    <div style={{ background: I, color: B, fontFamily: 'var(--font-sans)' }}>
+    <div className="bg-bg text-fg font-sans">
 
       {/* ── NAV ── */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        background: scrolled ? 'rgba(247,243,236,0.92)' : I,
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: `0.5px solid ${scrolled ? WA(0.18) : WA(0.08)}`,
-        boxShadow: scrolled ? '0 2px 16px rgba(28,20,16,0.06)' : 'none',
-        padding: '0 40px', height: 60,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/logo-icon.svg" alt="ByteForm icon" style={{ height: 34, width: 34 }} />
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-            <span style={{ ...serif, fontSize: 20, color: B, letterSpacing: '-0.4px' }}>Byte</span>
-            <span style={{ ...serif, fontSize: 20, color: W, letterSpacing: '-0.4px' }}>Form</span>
+      <nav className={[
+        'sticky top-0 z-50 px-5 md:px-10 h-[60px] flex items-center justify-between transition-all duration-200',
+        scrolled
+          ? 'bg-bg/92 backdrop-blur-xl border-b border-accent/18 shadow-sm'
+          : 'bg-bg border-b border-accent/8',
+      ].join(' ')}>
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setMenuOpen(false)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-icon.svg" alt="ByteForm" className="h-[34px] w-[34px]" />
+          <div className="flex items-baseline gap-px font-serif text-[20px] tracking-[-0.4px]">
+            <span className="text-fg">Byte</span>
+            <span className="text-accent">Form</span>
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-          {[['Features', '#features'], ['Pricing', '#pricing'], ['Blog', '/blog'], ['Demo', '/demo']].map(([label, href]) => (
-            <a key={label} href={href}
-              style={{ fontSize: 13, color: M, textDecoration: 'none', cursor: 'pointer' }}>
+        </Link>
+
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map(([label, href]) => (
+            <a key={label} href={href} className="text-[13px] text-fg-muted hover:text-fg transition-colors">
               {label}
             </a>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Link href="/auth/login" style={{
-            fontSize: 13, color: B, textDecoration: 'none',
-            border: `0.5px solid ${WA(0.25)}`, padding: '8px 18px',
-            borderRadius: 6, cursor: 'pointer',
-          }}>Log in</Link>
-          <Link href="/auth/login?mode=signup" style={{
-            fontSize: 13, color: I, background: W,
-            border: 'none', padding: '8px 18px',
-            borderRadius: 6, cursor: 'pointer', textDecoration: 'none',
-          }}>Start free</Link>
+
+        {/* Desktop auth buttons */}
+        <div className="hidden md:flex items-center gap-2.5">
+          <Link href="/auth/login" className="text-[13px] text-fg border border-accent/25 px-[18px] py-2 rounded-md hover:bg-accent/5 transition-colors">
+            Log in
+          </Link>
+          <Link href="/auth/login?mode=signup" className="text-[13px] text-[#F7F3EC] bg-accent px-[18px] py-2 rounded-md hover:bg-accent-hover transition-colors">
+            Start free
+          </Link>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden flex flex-col gap-[5px] p-2 -mr-2"
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        >
+          <span className={`block w-5 h-[1.5px] bg-fg transition-all duration-200 ${menuOpen ? 'rotate-45 translate-y-[6.5px]' : ''}`} />
+          <span className={`block w-5 h-[1.5px] bg-fg transition-all duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
+          <span className={`block w-5 h-[1.5px] bg-fg transition-all duration-200 ${menuOpen ? '-rotate-45 -translate-y-[6.5px]' : ''}`} />
+        </button>
       </nav>
 
+      {/* Mobile menu drawer */}
+      {menuOpen && (
+        <div className="md:hidden fixed inset-0 top-[60px] z-40 bg-bg flex flex-col px-5 py-8 gap-6">
+          {navLinks.map(([label, href]) => (
+            <a
+              key={label}
+              href={href}
+              className="text-lg text-fg-muted hover:text-fg transition-colors border-b border-accent/8 pb-6"
+              onClick={() => setMenuOpen(false)}
+            >
+              {label}
+            </a>
+          ))}
+          <div className="flex flex-col gap-3 pt-2">
+            <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="text-center text-[14px] text-fg border border-accent/25 px-5 py-3 rounded-md">
+              Log in
+            </Link>
+            <Link href="/auth/login?mode=signup" onClick={() => setMenuOpen(false)} className="text-center text-[14px] text-[#F7F3EC] bg-accent px-5 py-3 rounded-md">
+              Start free
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* ── HERO ── */}
-      <section style={{
-        padding: '80px 40px 64px',
-        display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(0,0.85fr)',
-        gap: 56, alignItems: 'center',
-        maxWidth: 1100, margin: '0 auto',
-      }}>
+      <section className="px-5 pt-14 pb-16 md:px-10 md:pt-20 md:pb-16 max-w-[1100px] mx-auto grid grid-cols-1 gap-12 md:grid-cols-[1.15fr_0.85fr] md:gap-14 items-center">
         <div>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            border: `0.5px solid ${WA(0.28)}`, padding: '5px 14px',
-            borderRadius: 20, marginBottom: 36,
-          }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: W, flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: W, letterSpacing: '0.9px', textTransform: 'uppercase' }}>
-            Beautiful forms. Honest pricing.
+          <div className="inline-flex items-center gap-2 border border-accent/28 px-3.5 py-[5px] rounded-full mb-9">
+            <div className="w-[5px] h-[5px] rounded-full bg-accent shrink-0" />
+            <span className="text-[11px] text-accent tracking-[0.9px] uppercase">
+              Beautiful forms. Honest pricing.
             </span>
           </div>
-          <h1 style={{
-            ...serif, fontSize: 'clamp(38px,5vw,54px)', color: B,
-            lineHeight: 1.07, letterSpacing: '-1.8px',
-            marginBottom: 22, fontWeight: 400,
-          }}>
+          <h1 className="font-serif text-[clamp(36px,6vw,54px)] text-fg leading-[1.07] tracking-[-1.8px] mb-5 font-normal">
             Forms your users<br />actually want to fill.
           </h1>
-          <p style={{ fontSize: 15, color: M, lineHeight: 1.78, maxWidth: 370, marginBottom: 40 }}>
-          Your forms are the first impression. Make them count without the $99/mo bill. Byteform builds beautiful, AI-powered forms your audience genuinely wants to complete.
+          <p className="text-[15px] text-fg-muted leading-[1.78] max-w-[370px] mb-10">
+            Your forms are the first impression. Make them count without the $99/mo bill. ByteForm builds beautiful, AI-powered forms your audience genuinely wants to complete.
           </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Link href="/auth/login?mode=signup" style={{
-              background: W, color: I, border: 'none',
-              padding: '13px 28px', borderRadius: 8, fontSize: 14,
-              cursor: 'pointer', textDecoration: 'none', display: 'inline-block',
-            }}>
+          <div className="flex flex-wrap gap-3 items-center">
+            <Link href="/auth/login?mode=signup" className="text-[14px] text-[#F7F3EC] bg-accent px-7 py-3.5 rounded-lg hover:bg-accent-hover transition-colors">
               Create your first form
             </Link>
-            <Link href="/demo" style={{
-              background: 'transparent', color: B,
-              border: `0.5px solid ${WA(0.28)}`,
-              padding: '13px 28px', borderRadius: 8, fontSize: 14,
-              cursor: 'pointer', textDecoration: 'none', display: 'inline-block',
-            }}>
+            <Link href="/demo" className="text-[14px] text-fg border border-accent/28 px-7 py-3.5 rounded-lg hover:bg-accent/5 transition-colors">
               See it in action
             </Link>
           </div>
-          <p style={{ fontSize: 12, color: D, marginTop: 14 }}>
-            No credit card required · Free to start
-          </p>
+          <p className="text-[12px] text-fg-dim mt-3.5">No credit card required · Free to start</p>
         </div>
 
-        {/* Hero form demo card — interactive */}
-        <div style={{
-          background: 'white', borderRadius: 14, padding: 32,
-          border: `0.5px solid ${WA(0.1)}`,
-          minHeight: 340,
-          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-        }}>
-          {/* Progress bar */}
+        {/* Hero interactive demo card */}
+        <div className="bg-white rounded-[14px] p-6 md:p-8 border border-accent/10 min-h-[320px] flex flex-col justify-between">
           <div>
-            <div style={{ height: 2, background: WA(0.08), borderRadius: 1, marginBottom: 24, overflow: 'hidden' }}>
-              <div style={{
-                width: `${heroProgress}%`, height: '100%', background: W, borderRadius: 1,
-                transition: 'width 0.4s ease',
-              }} />
+            {/* Progress bar */}
+            <div className="h-[2px] bg-accent/8 rounded-full mb-6 overflow-hidden">
+              <div className="h-full bg-accent rounded-full transition-all duration-500 ease-out" style={{ width: `${heroProgress}%` }} />
             </div>
 
             {heroDone ? (
-              /* ── Thank you screen ── */
-              <div style={{ textAlign: 'center', padding: '20px 0 12px' }}>
-                <div style={{ fontSize: 32, marginBottom: 16 }}>🎉</div>
-                <h3 style={{ ...serif, fontSize: 22, color: B, fontWeight: 400, marginBottom: 12, lineHeight: 1.3 }}>
-                  You&apos;re all set.
-                </h3>
-                <p style={{ fontSize: 13, color: M, lineHeight: 1.7, marginBottom: 24 }}>
+              <div className="text-center py-5">
+                <div className="text-3xl mb-4">🎉</div>
+                <h3 className="font-serif text-[22px] text-fg font-normal mb-3 leading-snug">You&apos;re all set.</h3>
+                <p className="text-[13px] text-fg-muted leading-[1.7] mb-6">
                   That calm, focused experience? That&apos;s what your users will feel every time they fill a ByteForm.
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <Link href="/auth/login?mode=signup" style={{
-                    display: 'block', background: W, color: I, textDecoration: 'none',
-                    padding: '11px 0', borderRadius: 7, fontSize: 13, textAlign: 'center',
-                  }}>
+                <div className="flex flex-col gap-2.5">
+                  <Link href="/auth/login?mode=signup" className="block bg-accent text-[#F7F3EC] no-underline py-2.5 rounded-lg text-[13px] text-center hover:bg-accent-hover transition-colors">
                     Build your first form →
                   </Link>
-                  <button onClick={heroReset} style={{
-                    background: 'transparent', color: M, border: `0.5px solid ${WA(0.2)}`,
-                    padding: '10px 0', borderRadius: 7, fontSize: 12, cursor: 'pointer',
-                  }}>
+                  <button onClick={heroReset} className="bg-transparent text-fg-muted border border-accent/20 py-2.5 rounded-lg text-[12px] cursor-pointer hover:bg-accent/5 transition-colors">
                     Start over
                   </button>
                 </div>
               </div>
             ) : (
-              /* ── Question screen ── */
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <span style={{ fontSize: 11, color: D, letterSpacing: '0.5px' }}>
-                    {heroStep + 1} OF {demoQuestions.length}
-                  </span>
-                  <span style={{ fontSize: 11, color: D }}>{heroProgress}%</span>
+                <div className="flex justify-between mb-5">
+                  <span className="text-[11px] text-fg-dim tracking-[0.5px]">{heroStep + 1} OF {demoQuestions.length}</span>
+                  <span className="text-[11px] text-fg-dim">{heroProgress}%</span>
                 </div>
-                <h3 style={{ ...serif, fontSize: 20, color: B, marginBottom: 20, lineHeight: 1.35, fontWeight: 400 }}>
+                <h3 className="font-serif text-[20px] text-fg mb-5 leading-snug font-normal">
                   {demoQuestions[heroStep].q}
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div className="flex flex-col gap-2">
                   {demoQuestions[heroStep].opts.map(opt => {
                     const selected = currentAnswer === opt
                     return (
                       <div
                         key={opt}
                         onClick={() => heroSelect(opt)}
+                        className="px-4 py-2.5 rounded-lg text-[13px] cursor-pointer select-none transition-all duration-150"
                         style={{
-                          padding: '11px 15px', cursor: 'pointer',
                           border: selected ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
-                          borderRadius: 7, fontSize: 13,
                           color: selected ? W : B,
                           background: selected ? WA(0.05) : 'transparent',
-                          transition: 'all 0.15s ease',
-                          userSelect: 'none',
                         }}
                       >
                         {opt}
@@ -258,27 +248,20 @@ export default function Home() {
             )}
           </div>
 
-          {/* Footer nav */}
           {!heroDone && (
-            <div style={{ marginTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="mt-5 flex justify-between items-center">
               {heroStep > 0 ? (
-                <button onClick={heroBack} style={{
-                  background: 'transparent', color: M, border: 'none',
-                  fontSize: 12, cursor: 'pointer', padding: 0,
-                }}>← Back</button>
+                <button onClick={heroBack} className="bg-transparent text-fg-muted border-none text-[12px] cursor-pointer p-0 hover:text-fg transition-colors">
+                  ← Back
+                </button>
               ) : (
-                <span style={{ fontSize: 11, color: D }}>Click an option</span>
+                <span className="text-[11px] text-fg-dim">Click an option</span>
               )}
               <button
                 onClick={heroNext}
                 disabled={!currentAnswer}
-                style={{
-                  background: currentAnswer ? W : WA(0.2),
-                  color: I, border: 'none',
-                  padding: '9px 20px', borderRadius: 6, fontSize: 13,
-                  cursor: currentAnswer ? 'pointer' : 'default',
-                  transition: 'background 0.2s ease',
-                }}
+                className="text-[#F7F3EC] border-none px-5 py-2 rounded-md text-[13px] transition-colors duration-200"
+                style={{ background: currentAnswer ? W : WA(0.2), cursor: currentAnswer ? 'pointer' : 'default' }}
               >
                 {heroStep === demoQuestions.length - 1 ? 'Finish ✓' : 'Next →'}
               </button>
@@ -288,62 +271,47 @@ export default function Home() {
       </section>
 
       {/* ── LIVE DEMO STRIP ── */}
-      <section style={{ padding: '64px 40px', background: 'white', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: W, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: 12 }}>
-          Try it yourself
-        </p>
-        <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, marginBottom: 10 }}>
-          Don&apos;t take our word for it.
-        </h2>
-        <p style={{ fontSize: 15, color: M, maxWidth: 400, margin: '0 auto 36px', lineHeight: 1.7 }}>
+      <section className="px-5 py-16 md:px-10 md:py-16 bg-white text-center">
+        <p className="text-[11px] text-accent tracking-[1.2px] uppercase mb-3">Try it yourself</p>
+        <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal mb-2.5">Don&apos;t take our word for it.</h2>
+        <p className="text-[15px] text-fg-muted max-w-[400px] mx-auto mb-9 leading-[1.7]">
           Click through a real ByteForm below. This is exactly what your users will experience.
         </p>
-        <div style={{
-          background: I, borderRadius: 16, padding: '40px 60px',
-          border: `0.5px solid ${WA(0.1)}`, maxWidth: 500, margin: '0 auto',
-        }}>
+        <div className="bg-bg rounded-2xl p-8 md:p-12 border border-accent/10 max-w-[500px] mx-auto">
           {demoSubmitted ? (
-            <div style={{ padding: '32px 0' }}>
-              <div style={{ ...serif, fontSize: 28, color: B, fontWeight: 400, marginBottom: 12 }}>
-                Thank you. 🎉
-              </div>
-              <p style={{ fontSize: 14, color: M, lineHeight: 1.7, marginBottom: 24 }}>
+            <div className="py-8">
+              <div className="font-serif text-[28px] text-fg font-normal mb-3">Thank you. 🎉</div>
+              <p className="text-[14px] text-fg-muted leading-[1.7] mb-6">
                 That&apos;s exactly what your respondents will feel — calm, clear, done.
               </p>
-              <button onClick={() => { setDemoSubmitted(false); setDemoValue('') }} style={{
-                background: 'transparent', color: W, border: `0.5px solid ${WA(0.3)}`,
-                padding: '9px 20px', borderRadius: 6, fontSize: 13, cursor: 'pointer',
-              }}>Try again</button>
+              <button
+                onClick={() => { setDemoSubmitted(false); setDemoValue('') }}
+                className="bg-transparent text-accent border border-accent/30 px-5 py-2 rounded-md text-[13px] cursor-pointer hover:bg-accent/5 transition-colors"
+              >
+                Try again
+              </button>
             </div>
           ) : (
             <>
-              <div style={{ height: 2, background: WA(0.08), borderRadius: 1, marginBottom: 28, overflow: 'hidden' }}>
-                <div style={{ width: '20%', height: '100%', background: W, borderRadius: 1 }} />
+              <div className="h-[2px] bg-accent/8 rounded-full mb-7 overflow-hidden">
+                <div className="h-full bg-accent rounded-full" style={{ width: '20%' }} />
               </div>
-              <h3 style={{ ...serif, fontSize: 22, color: B, fontWeight: 400, marginBottom: 24, lineHeight: 1.4 }}>
+              <h3 className="font-serif text-[22px] text-fg font-normal mb-6 leading-snug">
                 What&apos;s your biggest challenge with forms right now?
               </h3>
               <textarea
                 value={demoValue}
                 onChange={e => setDemoValue(e.target.value)}
                 placeholder="Type your answer here..."
-                style={{
-                  width: '100%', border: `0.5px solid ${WA(0.2)}`, borderRadius: 8,
-                  padding: 14, fontSize: 14, color: B, background: 'white',
-                  resize: 'none', height: 80, fontFamily: 'var(--font-sans)',
-                  outline: 'none', boxSizing: 'border-box',
-                }}
+                className="w-full border border-accent/20 rounded-lg p-3.5 text-[14px] text-fg bg-white resize-none h-20 font-sans outline-none focus:border-accent/50 box-border transition-colors"
               />
-              <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 11, color: D }}>Press Enter ↵ or</span>
+              <div className="mt-4 flex justify-between items-center">
+                <span className="text-[11px] text-fg-dim">Press Enter ↵ or</span>
                 <button
                   onClick={() => demoValue.trim() && setDemoSubmitted(true)}
-                  style={{
-                    background: demoValue.trim() ? W : WA(0.3), color: I,
-                    border: 'none', padding: '10px 22px', borderRadius: 6,
-                    fontSize: 13, cursor: demoValue.trim() ? 'pointer' : 'default',
-                    transition: 'background 0.2s',
-                  }}>
+                  className="text-[#F7F3EC] border-none px-5 py-2.5 rounded-md text-[13px] transition-colors duration-200"
+                  style={{ background: demoValue.trim() ? W : WA(0.3), cursor: demoValue.trim() ? 'pointer' : 'default' }}
+                >
                   OK →
                 </button>
               </div>
@@ -353,87 +321,66 @@ export default function Home() {
       </section>
 
       {/* ── TWO SIDES ── */}
-      <section id="features" style={{ padding: '80px 40px', maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <h2 style={{ ...serif, fontSize: 36, color: B, fontWeight: 400, lineHeight: 1.2 }}>
+      <section id="features" className="px-5 py-16 md:px-10 md:py-20 max-w-[1100px] mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-serif text-[28px] md:text-[36px] text-fg font-normal leading-snug">
             Built for two people.<br />You — and your users.
           </h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 24 }}>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Builder side */}
-          <div style={{ background: 'white', borderRadius: 14, padding: 36, border: `0.5px solid ${WA(0.1)}` }}>
-            <div style={{
-              display: 'inline-block', background: WA(0.06),
-              padding: '4px 12px', borderRadius: 12, marginBottom: 20,
-            }}>
-              <span style={{ fontSize: 11, color: W, letterSpacing: '0.5px' }}>For you — the builder</span>
+          <div className="bg-white rounded-[14px] p-8 border border-accent/10">
+            <div className="inline-block bg-accent/6 px-3 py-1 rounded-xl mb-5">
+              <span className="text-[11px] text-accent tracking-[0.5px]">For you — the builder</span>
             </div>
-            <h3 style={{ ...serif, fontSize: 22, color: B, fontWeight: 400, marginBottom: 16 }}>
-              Ready in under 2 minutes.
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            <h3 className="font-serif text-[22px] text-fg font-normal mb-4">Ready in under 2 minutes.</h3>
+            <div className="flex flex-col gap-2.5 mb-5">
               {[
-                { label: 'Welcome screen', icon: 'square' },
-                { label: 'Multiple choice', icon: 'bar', active: true },
-                { label: 'Short text', icon: 'line' },
-                { label: 'Thank you screen', icon: 'circle' },
+                { label: 'Welcome screen', active: false },
+                { label: 'Multiple choice', active: true },
+                { label: 'Short text', active: false },
+                { label: 'Thank you screen', active: false },
               ].map(({ label, active }) => (
-                <div key={label} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 14px', background: I, borderRadius: 8,
-                  border: active ? `1px solid ${WA(0.2)}` : 'none',
-                }}>
-                  <div style={{
-                    width: 28, height: 28, background: 'white', borderRadius: 6,
-                    border: `0.5px solid ${WA(0.15)}`, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: active ? W : WA(0.2) }} />
+                <div key={label} className={`flex items-center gap-3 px-3.5 py-2.5 bg-bg rounded-lg ${active ? 'border border-accent/20' : ''}`}>
+                  <div className="w-7 h-7 bg-white rounded-md border border-accent/15 shrink-0 flex items-center justify-center">
+                    <div className={`w-2 h-2 rounded-full ${active ? 'bg-accent' : 'bg-accent/20'}`} />
                   </div>
-                  <span style={{ fontSize: 13, color: active ? W : B, fontWeight: active ? 500 : 400 }}>{label}</span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {[0, 1, 2].map(i => <div key={i} style={{ width: 14, height: 1.5, background: D, borderRadius: 1 }} />)}
+                  <span className={`text-[13px] ${active ? 'text-accent font-medium' : 'text-fg'}`}>{label}</span>
+                  <div className="ml-auto flex flex-col gap-[3px]">
+                    {[0, 1, 2].map(i => <div key={i} className="w-3.5 h-[1.5px] bg-fg-dim rounded" />)}
                   </div>
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: 13, color: M, lineHeight: 1.65 }}>Drag, drop, publish. One click to share.</p>
+            <p className="text-[13px] text-fg-muted leading-[1.65]">Drag, drop, publish. One click to share.</p>
           </div>
 
           {/* Filler side */}
-          <div style={{ background: 'white', borderRadius: 14, padding: 36, border: `0.5px solid ${WA(0.1)}` }}>
-            <div style={{
-              display: 'inline-block', background: WA(0.06),
-              padding: '4px 12px', borderRadius: 12, marginBottom: 20,
-            }}>
-              <span style={{ fontSize: 11, color: W, letterSpacing: '0.5px' }}>For them — the respondent</span>
+          <div className="bg-white rounded-[14px] p-8 border border-accent/10">
+            <div className="inline-block bg-accent/6 px-3 py-1 rounded-xl mb-5">
+              <span className="text-[11px] text-accent tracking-[0.5px]">For them — the respondent</span>
             </div>
-            <h3 style={{ ...serif, fontSize: 22, color: B, fontWeight: 400, marginBottom: 16 }}>
-              An experience, not a chore.
-            </h3>
-            <div style={{
-              background: I, borderRadius: 10, padding: 24,
-              border: `0.5px solid ${WA(0.08)}`, marginBottom: 16,
-            }}>
-              <div style={{ height: 1.5, background: WA(0.08), borderRadius: 1, marginBottom: 18, overflow: 'hidden' }}>
-                <div style={{ width: '60%', height: '100%', background: W, borderRadius: 1 }} />
+            <h3 className="font-serif text-[22px] text-fg font-normal mb-4">An experience, not a chore.</h3>
+            <div className="bg-bg rounded-xl p-6 border border-accent/8 mb-4">
+              <div className="h-[1.5px] bg-accent/8 rounded mb-4 overflow-hidden">
+                <div className="h-full bg-accent rounded" style={{ width: '60%' }} />
               </div>
-              <p style={{ ...serif, fontSize: 17, color: B, fontWeight: 400, marginBottom: 16, lineHeight: 1.4 }}>
+              <p className="font-serif text-[17px] text-fg font-normal mb-4 leading-snug">
                 How likely are you to recommend us?
               </p>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div className="flex gap-1.5">
                 {[1, 2, 3, 9, 10].map(n => (
-                  <div key={n} style={{
-                    flex: 1, padding: '7px 0',
-                    border: n === 9 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
-                    borderRadius: 6, textAlign: 'center', fontSize: 12,
-                    color: n === 9 ? W : D,
-                    background: n === 9 ? WA(0.05) : 'transparent',
-                  }}>{n}</div>
+                  <div key={n} className="flex-1 py-1.5 rounded-md text-center text-[12px]"
+                    style={{
+                      border: n === 9 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
+                      color: n === 9 ? W : D,
+                      background: n === 9 ? WA(0.05) : 'transparent',
+                    }}
+                  >{n}</div>
                 ))}
               </div>
             </div>
-            <p style={{ fontSize: 13, color: M, lineHeight: 1.65 }}>
+            <p className="text-[13px] text-fg-muted leading-[1.65]">
               Calm, focused, one question at a time. Completion rates follow.
             </p>
           </div>
@@ -441,23 +388,21 @@ export default function Home() {
       </section>
 
       {/* ── COMPLETION RATE ── */}
-      <section style={{ background: W, padding: '72px 40px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 64, alignItems: 'center' }}>
+      <section className="bg-accent px-5 py-16 md:px-10 md:py-[72px]">
+        <div className="max-w-[1100px] mx-auto grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-16 items-center">
           <div>
-            <p style={{ fontSize: 11, color: IA(0.5), letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: 16 }}>
-              The completion rate problem
-            </p>
-            <h2 style={{ ...serif, fontSize: 36, color: I, fontWeight: 400, lineHeight: 1.2, marginBottom: 16 }}>
+            <p className="text-[11px] text-bg/50 tracking-[1.2px] uppercase mb-4">The completion rate problem</p>
+            <h2 className="font-serif text-[28px] md:text-[36px] text-bg font-normal leading-snug mb-4">
               Most forms lose<br />half their respondents.
             </h2>
-            <p style={{ fontSize: 15, color: IA(0.6), lineHeight: 1.78, marginBottom: 28 }}>
+            <p className="text-[15px] text-bg/60 leading-[1.78] mb-7">
               The average form completion rate is 47%. ByteForm users average 91%.
               That difference isn&apos;t a feature — it&apos;s revenue.
             </p>
-            <div style={{ background: IA(0.08), borderRadius: 10, padding: '20px 24px' }}>
-              <p style={{ fontSize: 13, color: IA(0.6), marginBottom: 4 }}>At 1,000 monthly views, that&apos;s</p>
-              <p style={{ ...serif, fontSize: 28, color: I, fontWeight: 400 }}>440 more responses</p>
-              <p style={{ fontSize: 13, color: IA(0.5), marginTop: 4 }}>without spending more on traffic.</p>
+            <div className="bg-bg/8 rounded-xl px-6 py-5">
+              <p className="text-[13px] text-bg/60 mb-1">At 1,000 monthly views, that&apos;s</p>
+              <p className="font-serif text-[28px] text-bg font-normal">440 more responses</p>
+              <p className="text-[13px] text-bg/50 mt-1">without spending more on traffic.</p>
             </div>
           </div>
           <div>
@@ -465,21 +410,21 @@ export default function Home() {
               { label: 'Average form builder', pct: 47, active: false },
               { label: 'ByteForm', pct: 91, active: true },
             ].map(({ label, pct, active }) => (
-              <div key={label} style={{ marginBottom: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, color: active ? I : IA(0.6), fontWeight: active ? 500 : 400 }}>{label}</span>
-                  <span style={{ fontSize: 13, color: active ? I : IA(0.6), fontWeight: active ? 500 : 400 }}>{pct}%</span>
+              <div key={label} className="mb-6">
+                <div className="flex justify-between mb-2">
+                  <span className={`text-[13px] ${active ? 'text-bg font-medium' : 'text-bg/60'}`}>{label}</span>
+                  <span className={`text-[13px] ${active ? 'text-bg font-medium' : 'text-bg/60'}`}>{pct}%</span>
                 </div>
-                <div style={{ height: 10, background: IA(0.1), borderRadius: 5, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: active ? I : IA(0.3), borderRadius: 5 }} />
+                <div className="h-2.5 bg-bg/10 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full ${active ? 'bg-bg' : 'bg-bg/30'}`} style={{ width: `${pct}%` }} />
                 </div>
               </div>
             ))}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 32 }}>
+            <div className="grid grid-cols-2 gap-4 mt-8">
               {[{ n: '2×', label: 'More responses' }, { n: '0%', label: 'Extra ad spend' }].map(({ n, label }) => (
-                <div key={label} style={{ background: IA(0.08), borderRadius: 10, padding: '16px 20px' }}>
-                  <div style={{ ...serif, fontSize: 28, color: I, fontWeight: 400 }}>{n}</div>
-                  <div style={{ fontSize: 12, color: IA(0.5), marginTop: 4 }}>{label}</div>
+                <div key={label} className="bg-bg/8 rounded-xl px-5 py-4">
+                  <div className="font-serif text-[28px] text-bg font-normal">{n}</div>
+                  <div className="text-[12px] text-bg/50 mt-1">{label}</div>
                 </div>
               ))}
             </div>
@@ -488,16 +433,14 @@ export default function Home() {
       </section>
 
       {/* ── RESPONDENT EXPERIENCE ── */}
-      <section style={{ padding: '80px 40px', background: 'white' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 64, alignItems: 'center' }}>
+      <section className="px-5 py-16 md:px-10 md:py-20 bg-white">
+        <div className="max-w-[1100px] mx-auto grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-16 items-center">
           <div>
-            <p style={{ fontSize: 11, color: W, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: 14 }}>
-              The respondent experience
-            </p>
-            <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, lineHeight: 1.2, marginBottom: 16 }}>
+            <p className="text-[11px] text-accent tracking-[1.2px] uppercase mb-3.5">The respondent experience</p>
+            <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal leading-snug mb-4">
               Your brand,<br />at its best.
             </h2>
-            <p style={{ fontSize: 15, color: M, lineHeight: 1.78, marginBottom: 28 }}>
+            <p className="text-[15px] text-fg-muted leading-[1.78] mb-7">
               Every form your users open reflects on you. ByteForm makes sure that reflection
               is always polished, calm, and intentional.
             </p>
@@ -507,38 +450,38 @@ export default function Home() {
               'Progress bar that makes finishing feel close',
               'Works beautifully on any device',
             ].map(point => (
-              <div key={point} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: W, marginTop: 6, flexShrink: 0 }} />
-                <p style={{ fontSize: 14, color: M, lineHeight: 1.65 }}>{point}</p>
+              <div key={point} className="flex items-start gap-3.5 mb-3.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-[7px] shrink-0" />
+                <p className="text-[14px] text-fg-muted leading-[1.65]">{point}</p>
               </div>
             ))}
           </div>
 
-          {/* Phone frame */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: 240, background: B, borderRadius: 32, padding: 12, border: `6px solid ${B}` }}>
-              <div style={{ background: I, borderRadius: 22, overflow: 'hidden' }}>
-                <div style={{ padding: '20px 18px 16px' }}>
-                  <div style={{ height: 2, background: WA(0.08), borderRadius: 1, marginBottom: 18, overflow: 'hidden' }}>
-                    <div style={{ width: '60%', height: '100%', background: W, borderRadius: 1 }} />
+          {/* Phone mockup */}
+          <div className="flex justify-center">
+            <div className="w-[240px] bg-fg rounded-[32px] p-3 border-[6px] border-fg">
+              <div className="bg-bg rounded-[22px] overflow-hidden">
+                <div className="p-5">
+                  <div className="h-[2px] bg-accent/8 rounded mb-4 overflow-hidden">
+                    <div className="h-full bg-accent rounded" style={{ width: '60%' }} />
                   </div>
-                  <p style={{ fontSize: 11, color: D, marginBottom: 10 }}>3 OF 5</p>
-                  <p style={{ ...serif, fontSize: 15, color: B, fontWeight: 400, lineHeight: 1.4, marginBottom: 14 }}>
+                  <p className="text-[11px] text-fg-dim mb-2.5">3 OF 5</p>
+                  <p className="font-serif text-[15px] text-fg font-normal leading-snug mb-3.5">
                     How did you hear about us?
                   </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  <div className="flex flex-col gap-1.5">
                     {['Word of mouth', 'LinkedIn', 'Search / Google', 'Other'].map((opt, i) => (
-                      <div key={opt} style={{
-                        padding: '8px 11px',
-                        border: i === 1 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
-                        borderRadius: 6, fontSize: 11,
-                        color: i === 1 ? W : B,
-                        background: i === 1 ? WA(0.05) : 'transparent',
-                      }}>{opt}</div>
+                      <div key={opt} className="px-3 py-2 rounded-md text-[11px]"
+                        style={{
+                          border: i === 1 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
+                          color: i === 1 ? W : B,
+                          background: i === 1 ? WA(0.05) : 'transparent',
+                        }}
+                      >{opt}</div>
                     ))}
                   </div>
-                  <div style={{ marginTop: 14, textAlign: 'right' }}>
-                    <button style={{ background: W, color: I, border: 'none', padding: '7px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer' }}>
+                  <div className="mt-3.5 text-right">
+                    <button className="border-none px-3.5 py-1.5 rounded-md text-[11px] cursor-pointer" style={{ background: W, color: I }}>
                       Next →
                     </button>
                   </div>
@@ -550,117 +493,98 @@ export default function Home() {
       </section>
 
       {/* ── QUESTION TYPES ── */}
-      <section id="features-types" style={{ padding: '80px 40px', maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <p style={{ fontSize: 11, color: W, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: 12 }}>
-            13 question types
-          </p>
-          <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, lineHeight: 1.2 }}>
+      <section className="px-5 py-16 md:px-10 md:py-20 max-w-[1100px] mx-auto">
+        <div className="text-center mb-13">
+          <p className="text-[11px] text-accent tracking-[1.2px] uppercase mb-3">13 question types</p>
+          <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal leading-snug">
             Every answer format.<br />All of them beautiful.
           </h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 18 }}>
-
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Short text */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 22, border: `0.5px solid ${WA(0.1)}` }}>
-            <p style={{ fontSize: 11, color: D, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 14 }}>Short text</p>
-            <div style={{ borderBottom: `1.5px solid ${W}`, paddingBottom: 6, fontSize: 13, color: B }}>Your answer here_</div>
+          <div className="bg-white rounded-xl p-5 border border-accent/10">
+            <p className="text-[11px] text-fg-dim tracking-[0.8px] uppercase mb-3.5">Short text</p>
+            <div className="border-b-[1.5px] border-accent pb-1.5 text-[13px] text-fg">Your answer here_</div>
           </div>
-
           {/* Multiple choice */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 22, border: `0.5px solid ${WA(0.1)}` }}>
-            <p style={{ fontSize: 11, color: D, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 14 }}>Multiple choice</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          <div className="bg-white rounded-xl p-5 border border-accent/10">
+            <p className="text-[11px] text-fg-dim tracking-[0.8px] uppercase mb-3.5">Multiple choice</p>
+            <div className="flex flex-col gap-1.5">
               {['Option A', 'Option B', 'Option C'].map((opt, i) => (
-                <div key={opt} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', border: i === 0 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.2)}`, background: i === 0 ? WA(0.08) : 'transparent', flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: i === 0 ? W : M }}>{opt}</span>
+                <div key={opt} className="flex items-center gap-2">
+                  <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ border: i === 0 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.2)}`, background: i === 0 ? WA(0.08) : 'transparent' }} />
+                  <span className="text-[12px]" style={{ color: i === 0 ? W : M }}>{opt}</span>
                 </div>
               ))}
             </div>
           </div>
-
           {/* Star rating */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 22, border: `0.5px solid ${WA(0.1)}` }}>
-            <p style={{ fontSize: 11, color: D, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 14 }}>Star rating</p>
-            <div style={{ display: 'flex', gap: 5 }}>
+          <div className="bg-white rounded-xl p-5 border border-accent/10">
+            <p className="text-[11px] text-fg-dim tracking-[0.8px] uppercase mb-3.5">Star rating</p>
+            <div className="flex gap-1.5">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} style={{ width: 20, height: 20, background: i <= 4 ? W : WA(0.12), borderRadius: 3 }} />
+                <div key={i} className="w-5 h-5 rounded-[3px]" style={{ background: i <= 4 ? W : WA(0.12) }} />
               ))}
             </div>
           </div>
-
           {/* Yes / No */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 22, border: `0.5px solid ${WA(0.1)}` }}>
-            <p style={{ fontSize: 11, color: D, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 14 }}>Yes / No</p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <div style={{ flex: 1, padding: '8px 0', border: `1.5px solid ${W}`, borderRadius: 6, textAlign: 'center', fontSize: 12, color: W, background: WA(0.05) }}>Yes</div>
-              <div style={{ flex: 1, padding: '8px 0', border: `0.5px solid ${WA(0.15)}`, borderRadius: 6, textAlign: 'center', fontSize: 12, color: M }}>No</div>
+          <div className="bg-white rounded-xl p-5 border border-accent/10">
+            <p className="text-[11px] text-fg-dim tracking-[0.8px] uppercase mb-3.5">Yes / No</p>
+            <div className="flex gap-2">
+              <div className="flex-1 py-2 rounded-md text-center text-[12px]" style={{ border: `1.5px solid ${W}`, color: W, background: WA(0.05) }}>Yes</div>
+              <div className="flex-1 py-2 rounded-md text-center text-[12px]" style={{ border: `0.5px solid ${WA(0.15)}`, color: M }}>No</div>
             </div>
           </div>
-
           {/* NPS */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 22, border: `0.5px solid ${WA(0.1)}` }}>
-            <p style={{ fontSize: 11, color: D, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 14 }}>Rating (NPS)</p>
-            <div style={{ display: 'flex', gap: 4 }}>
+          <div className="bg-white rounded-xl p-5 border border-accent/10">
+            <p className="text-[11px] text-fg-dim tracking-[0.8px] uppercase mb-3.5">Rating (NPS)</p>
+            <div className="flex gap-1">
               {[1, 3, 5, 9, 10].map(n => (
-                <div key={n} style={{
-                  flex: 1, padding: '5px 0',
-                  border: n === 9 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
-                  borderRadius: 4, textAlign: 'center', fontSize: 10,
-                  color: n === 9 ? W : D,
-                  background: n === 9 ? WA(0.05) : 'transparent',
-                }}>{n}</div>
+                <div key={n} className="flex-1 py-1 rounded text-center text-[10px]"
+                  style={{ border: n === 9 ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`, color: n === 9 ? W : D, background: n === 9 ? WA(0.05) : 'transparent' }}
+                >{n}</div>
               ))}
             </div>
           </div>
-
           {/* Date */}
-          <div style={{ background: 'white', borderRadius: 12, padding: 22, border: `0.5px solid ${WA(0.1)}` }}>
-            <p style={{ fontSize: 11, color: D, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 14 }}>Date</p>
-            <div style={{ display: 'flex', gap: 6 }}>
+          <div className="bg-white rounded-xl p-5 border border-accent/10">
+            <p className="text-[11px] text-fg-dim tracking-[0.8px] uppercase mb-3.5">Date</p>
+            <div className="flex gap-1.5">
               {[['MM', false], ['DD', true], ['YYYY', false]].map(([lbl, active]) => (
-                <div key={String(lbl)} style={{
-                  flex: 1, border: active ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`,
-                  borderRadius: 6, padding: '6px 0', textAlign: 'center',
-                  fontSize: 11, color: active ? W : B,
-                  background: active ? WA(0.05) : 'transparent',
-                }}>{String(lbl)}</div>
+                <div key={String(lbl)} className="flex-1 rounded-md py-1.5 text-center text-[11px]"
+                  style={{ border: active ? `1.5px solid ${W}` : `0.5px solid ${WA(0.15)}`, color: active ? W : B, background: active ? WA(0.05) : 'transparent' }}
+                >{String(lbl)}</div>
               ))}
             </div>
           </div>
-
         </div>
-        <p style={{ textAlign: 'center', fontSize: 13, color: D, marginTop: 20 }}>
+        <p className="text-center text-[13px] text-fg-dim mt-5">
           + 7 more: long text, email, number, dropdown, checkboxes, file upload, statement
         </p>
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section style={{ padding: '80px 40px', background: 'white' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400 }}>What teams are saying</h2>
+      <section className="px-5 py-16 md:px-10 md:py-20 bg-white">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-13">
+            <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal">What teams are saying</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 22 }}>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { quote: '"Completion rate jumped from 52% to 89% in the first week."', name: 'Sarah Chen', role: 'Head of Growth, Versa', initials: 'SC' },
               { quote: '"Our clients ask us what tool we used. It reflects so well on our agency."', name: 'Marco Reyes', role: 'Founder, Studio MR', initials: 'MR' },
               { quote: '"I built our entire onboarding survey in 8 minutes. It looked custom-made."', name: 'Jade Park', role: 'Product Lead, Fable', initials: 'JP' },
             ].map(({ quote, name, role, initials }) => (
-              <div key={name} style={{ padding: 30, background: I, borderRadius: 14, border: `0.5px solid ${WA(0.1)}` }}>
-                <div style={{ width: 28, height: 2, background: W, marginBottom: 18 }} />
-                <p style={{ ...serif, fontSize: 16, color: B, lineHeight: 1.6, fontWeight: 400, marginBottom: 22 }}>{quote}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{
-                    width: 34, height: 34, borderRadius: '50%', background: W,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <span style={{ fontSize: 12, color: I, fontWeight: 500 }}>{initials}</span>
+              <div key={name} className="p-7 bg-bg rounded-[14px] border border-accent/10">
+                <div className="w-7 h-[2px] bg-accent mb-4" />
+                <p className="font-serif text-[16px] text-fg leading-[1.6] font-normal mb-5">{quote}</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-[34px] h-[34px] rounded-full bg-accent flex items-center justify-center shrink-0">
+                    <span className="text-[12px] text-[#F7F3EC] font-medium">{initials}</span>
                   </div>
                   <div>
-                    <p style={{ fontSize: 13, color: B, fontWeight: 500, margin: 0 }}>{name}</p>
-                    <p style={{ fontSize: 11, color: D, margin: 0 }}>{role}</p>
+                    <p className="text-[13px] text-fg font-medium m-0">{name}</p>
+                    <p className="text-[11px] text-fg-dim m-0">{role}</p>
                   </div>
                 </div>
               </div>
@@ -670,36 +594,37 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section style={{ padding: '80px 40px', maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400 }}>Up and running in minutes.</h2>
+      <section className="px-5 py-16 md:px-10 md:py-20 max-w-[1100px] mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal">Up and running in minutes.</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 0 }}>
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-0">
           {[
             { n: '01', title: 'Create your form', body: 'Drag and drop questions, set your logic, customise your welcome and thank-you screens. Takes under 2 minutes.' },
             { n: '02', title: 'Publish and share', body: "Get a clean, shareable link instantly. Embed it anywhere. Your form is live the moment you click publish." },
             { n: '03', title: 'Collect responses', body: 'Watch responses come in on your dashboard. Export any time. Every submission timestamped and stored.' },
           ].map(({ n, title, body }, i) => (
-            <div key={n} style={{
-              padding: `0 ${i === 2 ? 0 : 36}px 0 ${i === 0 ? 0 : 36}px`,
-              borderRight: i < 2 ? `0.5px solid ${WA(0.1)}` : 'none',
-            }}>
-              <div style={{ ...serif, fontSize: 44, color: WA(0.15), fontWeight: 400, marginBottom: 16 }}>{n}</div>
-              <h3 style={{ fontSize: 15, color: B, fontWeight: 500, marginBottom: 10 }}>{title}</h3>
-              <p style={{ fontSize: 13, color: M, lineHeight: 1.7 }}>{body}</p>
+            <div key={n} className={[
+              i < 2 ? 'border-b border-accent/10 pb-10 md:border-b-0 md:pb-0 md:border-r md:pr-9' : '',
+              i === 1 ? 'md:px-9' : '',
+              i === 2 ? 'md:pl-9' : '',
+            ].join(' ')}>
+              <div className="font-serif text-[44px] text-accent/15 font-normal mb-4">{n}</div>
+              <h3 className="text-[15px] text-fg font-medium mb-2.5">{title}</h3>
+              <p className="text-[13px] text-fg-muted leading-[1.7]">{body}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" style={{ padding: '80px 40px', background: 'white' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, marginBottom: 10 }}>Simple pricing.</h2>
-            <p style={{ fontSize: 15, color: M }}>Start free. Upgrade when you&apos;re ready.</p>
+      <section id="pricing" className="px-5 py-16 md:px-10 md:py-20 bg-white">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-center mb-13">
+            <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal mb-2.5">Simple pricing.</h2>
+            <p className="text-[15px] text-fg-muted">Start free. Upgrade when you&apos;re ready.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 22, alignItems: 'start' }}>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3 items-start">
             {[
               {
                 name: 'Free', sub: 'Get started', price: '$0', per: 'forever', popular: false,
@@ -717,38 +642,32 @@ export default function Home() {
                 cta: 'Talk to us', href: 'mailto:hello@byteform.co',
               },
             ].map(({ name, sub, price, per, popular, features, cta, href }) => (
-              <div key={name} style={{
-                padding: 30, background: I, borderRadius: 14,
-                border: popular ? `2px solid ${W}` : `0.5px solid ${WA(0.12)}`,
-                position: 'relative',
-              }}>
+              <div key={name} className={`p-7 bg-bg rounded-[14px] relative ${popular ? 'border-2 border-accent' : 'border border-accent/12'}`}>
                 {popular && (
-                  <div style={{
-                    position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-                    background: W, padding: '3px 16px', borderRadius: 12,
-                    fontSize: 11, color: I, letterSpacing: '0.5px', whiteSpace: 'nowrap',
-                  }}>Most popular</div>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent px-4 py-[3px] rounded-xl text-[11px] text-[#F7F3EC] tracking-[0.5px] whitespace-nowrap">
+                    Most popular
+                  </div>
                 )}
-                <p style={{ fontSize: 14, color: B, fontWeight: 500, marginBottom: 4 }}>{name}</p>
-                <p style={{ fontSize: 11, color: D, marginBottom: 22 }}>{sub}</p>
-                <div style={{ ...serif, fontSize: 36, color: B, fontWeight: 400, marginBottom: 4 }}>{price}</div>
-                <p style={{ fontSize: 12, color: D, marginBottom: 26 }}>{per}</p>
-                <div style={{ borderTop: `0.5px solid ${WA(0.1)}`, paddingTop: 20, marginBottom: 26 }}>
+                <p className="text-[14px] text-fg font-medium mb-1">{name}</p>
+                <p className="text-[11px] text-fg-dim mb-5">{sub}</p>
+                <div className="font-serif text-[36px] text-fg font-normal mb-1">{price}</div>
+                <p className="text-[12px] text-fg-dim mb-6">{per}</p>
+                <div className="border-t border-accent/10 pt-5 mb-6">
                   {features.map(f => (
-                    <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: W, flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, color: M }}>{f}</span>
+                    <div key={f} className="flex items-center gap-2.5 mb-2.5">
+                      <div className="w-[5px] h-[5px] rounded-full bg-accent shrink-0" />
+                      <span className="text-[13px] text-fg-muted">{f}</span>
                     </div>
                   ))}
                 </div>
-                <Link href={href} style={{
-                  display: 'block', width: '100%', padding: '11px 0', textAlign: 'center',
-                  border: popular ? 'none' : `0.5px solid ${WA(0.25)}`,
-                  borderRadius: 7, fontSize: 13, cursor: 'pointer',
-                  background: popular ? W : 'transparent',
-                  color: popular ? I : B,
-                  textDecoration: 'none',
-                }}>{cta}</Link>
+                <Link href={href} className="block w-full py-2.5 text-center rounded-lg text-[13px] no-underline transition-colors"
+                  style={{
+                    border: popular ? 'none' : `0.5px solid ${WA(0.25)}`,
+                    background: popular ? W : 'transparent',
+                    color: popular ? I : B,
+                  }}>
+                  {cta}
+                </Link>
               </div>
             ))}
           </div>
@@ -756,32 +675,27 @@ export default function Home() {
       </section>
 
       {/* ── FAQ ── */}
-      <section style={{ padding: '80px 40px', maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.75fr) minmax(0,1.25fr)', gap: 64, alignItems: 'start' }}>
+      <section className="px-5 py-16 md:px-10 md:py-20 max-w-[1100px] mx-auto">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[0.75fr_1.25fr] md:gap-16 items-start">
           <div>
-            <h2 style={{ ...serif, fontSize: 34, color: B, fontWeight: 400, lineHeight: 1.2 }}>
+            <h2 className="font-serif text-[28px] md:text-[34px] text-fg font-normal leading-snug">
               Questions<br />answered.
             </h2>
           </div>
           <div>
             {faqs.map((faq, i) => (
-              <div key={i} style={{ borderBottom: `0.5px solid ${WA(0.1)}` }}>
+              <div key={i} className="border-b border-accent/10">
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  style={{
-                    width: '100%', display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', padding: '18px 0', background: 'none',
-                    border: 'none', cursor: 'pointer', textAlign: 'left',
-                  }}>
-                  <span style={{ fontSize: 14, color: openFaq === i ? W : B, fontWeight: openFaq === i ? 500 : 400 }}>
+                  className="w-full flex justify-between items-center py-4 bg-transparent border-none cursor-pointer text-left gap-4"
+                >
+                  <span className={`text-[14px] ${openFaq === i ? 'text-accent font-medium' : 'text-fg'}`}>
                     {faq.q}
                   </span>
-                  <span style={{ fontSize: 18, color: W, flexShrink: 0, marginLeft: 16 }}>
-                    {openFaq === i ? '−' : '+'}
-                  </span>
+                  <span className="text-[18px] text-accent shrink-0">{openFaq === i ? '−' : '+'}</span>
                 </button>
                 {openFaq === i && (
-                  <p style={{ fontSize: 14, color: M, lineHeight: 1.72, paddingBottom: 18 }}>{faq.a}</p>
+                  <p className="text-[14px] text-fg-muted leading-[1.72] pb-4">{faq.a}</p>
                 )}
               </div>
             ))}
@@ -790,81 +704,70 @@ export default function Home() {
       </section>
 
       {/* ── CLOSING CTA ── */}
-      <section style={{ background: B, padding: '80px 40px', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: IA(0.35), letterSpacing: '1.3px', textTransform: 'uppercase', marginBottom: 16 }}>
-          Get started today
-        </p>
-        <h2 style={{ ...serif, fontSize: 42, color: I, fontWeight: 400, lineHeight: 1.12, marginBottom: 14 }}>
+      <section className="bg-fg px-5 py-16 md:px-10 md:py-20 text-center">
+        <p className="text-[11px] text-bg/35 tracking-[1.3px] uppercase mb-4">Get started today</p>
+        <h2 className="font-serif text-[34px] md:text-[42px] text-bg font-normal leading-[1.12] mb-3.5">
           Your users deserve<br />better than a boring form.
         </h2>
-        <p style={{ fontSize: 15, color: IA(0.45), maxWidth: 380, margin: '0 auto 40px', lineHeight: 1.75 }}>
+        <p className="text-[15px] text-bg/45 max-w-[380px] mx-auto mb-10 leading-[1.75]">
           So do you. Build something that feels as good as the product you&apos;re building.
         </p>
-        <Link href="/auth/login?mode=signup" style={{
-          display: 'inline-block', background: I, color: W,
-          border: 'none', padding: '15px 40px', borderRadius: 8,
-          fontSize: 14, fontWeight: 500, cursor: 'pointer',
-          textDecoration: 'none', letterSpacing: '0.2px',
-        }}>
+        <Link href="/auth/login?mode=signup" className="inline-block bg-bg text-accent px-10 py-4 rounded-lg text-[14px] font-medium no-underline hover:bg-bg/90 transition-colors tracking-[0.2px]">
           Start building for free
         </Link>
-        <p style={{ fontSize: 12, color: IA(0.25), marginTop: 16 }}>
-          No credit card · Free tier always available
-        </p>
+        <p className="text-[12px] text-bg/25 mt-4">No credit card · Free tier always available</p>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: '#140E0A', padding: '36px 40px', flexWrap: 'wrap', gap: 24 }}>
-        {/* Top row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
+      <footer className="bg-[#140E0A] px-5 py-9 md:px-10">
+        <div className="flex justify-between items-start flex-wrap gap-6 mb-7">
           {/* Brand */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
-              <img src="/logo-icon.svg" alt="ByteForm icon" style={{ height: 30, width: 30, opacity: 0.85 }} />
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                <span style={{ ...serif, fontSize: 17, color: IA(0.55), letterSpacing: '-0.3px' }}>Byte</span>
-                <span style={{ ...serif, fontSize: 17, color: W, letterSpacing: '-0.3px' }}>Form</span>
+            <div className="flex items-center gap-2.5 mb-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-icon.svg" alt="ByteForm" className="h-[30px] w-[30px] opacity-85" />
+              <div className="font-serif text-[17px] tracking-[-0.3px]">
+                <span style={{ color: IA(0.55) }}>Byte</span>
+                <span className="text-accent">Form</span>
               </div>
             </div>
-            <p style={{ fontSize: 12, color: IA(0.3), lineHeight: 1.6, maxWidth: 220 }}>
+            <p className="text-[12px] leading-[1.6] max-w-[220px]" style={{ color: IA(0.3) }}>
               Beautiful, conversational forms.<br />Built for completion rates that matter.
             </p>
           </div>
 
           {/* Links */}
-          <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
+          <div className="flex gap-10 flex-wrap">
             <div>
-              <p style={{ fontSize: 11, color: IA(0.25), letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 12 }}>Product</p>
+              <p className="text-[11px] tracking-[0.8px] uppercase mb-3" style={{ color: IA(0.25) }}>Product</p>
               {['Features', 'Pricing', 'Docs'].map(l => (
-                <a key={l} href={`#${l.toLowerCase()}`} style={{ display: 'block', fontSize: 13, color: IA(0.35), textDecoration: 'none', marginBottom: 8 }}>{l}</a>
+                <a key={l} href={`#${l.toLowerCase()}`} className="block text-[13px] no-underline mb-2 hover:opacity-60 transition-opacity" style={{ color: IA(0.35) }}>{l}</a>
               ))}
             </div>
             <div>
-              <p style={{ fontSize: 11, color: IA(0.25), letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 12 }}>Company</p>
+              <p className="text-[11px] tracking-[0.8px] uppercase mb-3" style={{ color: IA(0.25) }}>Company</p>
               {[
                 { label: 'LinkedIn', href: 'https://linkedin.com/company/byteform' },
                 { label: 'Privacy', href: '#' },
                 { label: 'Terms', href: '#' },
               ].map(({ label, href }) => (
-                <a key={label} href={href} style={{ display: 'block', fontSize: 13, color: IA(0.35), textDecoration: 'none', marginBottom: 8 }}>{label}</a>
+                <a key={label} href={href} className="block text-[13px] no-underline mb-2 hover:opacity-60 transition-opacity" style={{ color: IA(0.35) }}>{label}</a>
               ))}
             </div>
             <div>
-              <p style={{ fontSize: 11, color: IA(0.25), letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 12 }}>Contact</p>
-              <a href="mailto:team@skyl4b.com" style={{ display: 'block', fontSize: 13, color: IA(0.35), textDecoration: 'none', marginBottom: 8 }}>team@skyl4b.com</a>
+              <p className="text-[11px] tracking-[0.8px] uppercase mb-3" style={{ color: IA(0.25) }}>Contact</p>
+              <a href="mailto:team@skyl4b.com" className="block text-[13px] no-underline mb-2 hover:opacity-60 transition-opacity" style={{ color: IA(0.35) }}>team@skyl4b.com</a>
             </div>
           </div>
         </div>
 
-        {/* Bottom row */}
-        <div style={{ borderTop: `0.5px solid ${IA(0.08)}`, paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ fontSize: 12, color: IA(0.2) }}>© 2026 ByteForm. All rights reserved.</span>
-          <span style={{ fontSize: 12, color: IA(0.15) }}>
+        <div className="border-t pt-5 flex justify-between items-center flex-wrap gap-3" style={{ borderColor: IA(0.08) }}>
+          <span className="text-[12px]" style={{ color: IA(0.2) }}>© 2026 ByteForm. All rights reserved.</span>
+          <span className="text-[12px]" style={{ color: IA(0.15) }}>
             A&nbsp;<span style={{ color: IA(0.3) }}>skyl4b</span>&nbsp;product
           </span>
         </div>
       </footer>
-
     </div>
   )
 }
