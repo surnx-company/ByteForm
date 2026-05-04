@@ -741,7 +741,6 @@ export function SaveableFormBuilder({ initialForm }: Props) {
               <div style={{ position: "absolute", inset: 0 }}>
                 <FormView
                   form={form}
-                  key={JSON.stringify(form)}
                   jumpTo={
                     editingScreen === "welcome"
                       ? "welcome"
