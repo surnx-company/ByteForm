@@ -60,6 +60,7 @@ export function PublicFormShell({ form }: Props) {
             body: JSON.stringify({
               answers,
               completed: true,
+              formId: form.id,
             }),
           });
         } else {

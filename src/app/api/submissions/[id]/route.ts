@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
 import { submissionSchema } from "@/shared/lib/validation/forms";
 
+const RPC_ERROR_STATUS: Record<string, number> = {
+  submission_not_found: 404,
+  form_mismatch: 403,
+  already_completed: 400,
+};
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -24,40 +30,26 @@ export async function PATCH(
     );
   }
 
-  // We need the form_id for the RPC.
-  // Respondents don't have auth, so we fetch the submission's form_id first.
-  const { data: submission, error: fetchError } = await supabase
-    .from("submissions")
-    .select("form_id, completed_at")
-    .eq("id", submissionId)
-    .single();
-
-  if (fetchError || !submission) {
-    return NextResponse.json({ error: "Submission not found" }, { status: 404 });
+  if (!parsed.data.formId) {
+    return NextResponse.json({ error: "formId is required" }, { status: 400 });
   }
 
-  if (submission.completed_at) {
-    return NextResponse.json(
-      { error: "Submission already completed" },
-      { status: 400 }
-    );
-  }
-
-  // If completed is true in the body (or some other signal), set completed_at.
-  // The client can pass a 'completed' flag or we can just infer it.
-  // In the two-phase flow, the client calls this when they finish.
-  const isFinal = (raw as { completed?: boolean }).completed === true;
-  const completedAt = isFinal ? new Date().toISOString() : null;
+  // Direct SELECT on submissions is blocked by RLS for anonymous respondents,
+  // so we delegate validation (existence, form match, completion) to the
+  // SECURITY DEFINER RPC and translate its raised exceptions to HTTP statuses.
+  const completedAt =
+    parsed.data.completed === true ? new Date().toISOString() : null;
 
   const { error: rpcError } = await supabase.rpc("update_submission", {
     p_submission_id: submissionId,
-    p_form_id: submission.form_id,
+    p_form_id: parsed.data.formId,
     p_answers: parsed.data.answers,
     p_completed_at: completedAt,
   });
 
   if (rpcError) {
-    return NextResponse.json({ error: rpcError.message }, { status: 500 });
+    const status = RPC_ERROR_STATUS[rpcError.message] ?? 500;
+    return NextResponse.json({ error: rpcError.message }, { status });
   }
 
   return NextResponse.json({ success: true });
