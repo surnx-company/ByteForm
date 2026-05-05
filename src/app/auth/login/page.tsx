@@ -146,19 +146,15 @@ function LoginForm() {
 
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
-        fontFamily: "var(--font-sans)",
-      }}
+      className="grid grid-cols-1 md:grid-cols-2 min-h-screen"
+      style={{ fontFamily: "var(--font-sans)" }}
     >
-      {/* ── LEFT PANEL ── */}
+      {/* ── LEFT PANEL — hidden on mobile ── */}
       <div
+        className="hidden md:flex"
         style={{
           background: B,
           padding: "48px 56px",
-          display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           position: "relative",
@@ -531,15 +527,20 @@ function LoginForm() {
 
       {/* ── RIGHT PANEL ── */}
       <div
-        style={{
-          background: I,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "48px 56px",
-        }}
+        className="flex items-center justify-center px-6 py-10 md:px-14"
+        style={{ background: I }}
       >
         <div style={{ width: "100%", maxWidth: 380 }}>
+          {/* Mobile-only logo */}
+          <div className="flex md:hidden justify-center mb-8">
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+              <img src="/logo-icon.svg" alt="ByteForm" style={{ height: 32, width: 32 }} />
+              <span style={{ ...serif, fontSize: 19, letterSpacing: "-0.4px" }}>
+                <span style={{ color: B }}>Byte</span>
+                <span style={{ color: W }}>Form</span>
+              </span>
+            </Link>
+          </div>
           {/* Mode heading with fade transition */}
           <div
             style={{

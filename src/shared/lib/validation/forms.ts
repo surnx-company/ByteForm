@@ -141,6 +141,7 @@ export const submissionSchema = z
   .object({
     answers: z.record(z.string(), answerValueSchema),
     startedAt: z.string().datetime({ offset: true }).optional(),
+    completed: z.boolean().optional(),
   })
   .strict();
 
