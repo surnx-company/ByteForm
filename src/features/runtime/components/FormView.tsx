@@ -153,10 +153,10 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
   }, [stage, handleStartForm, handleSubmit, goPrev]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-bg text-fg">
+    <div className="relative h-full w-full overflow-y-auto overflow-x-hidden bg-bg text-fg">
       {/* Progress bar */}
       {stage === "questions" && (
-        <div className="absolute top-0 left-0 right-0 z-50 h-1 bg-border">
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-border">
           <motion.div
             className="h-full bg-accent"
             initial={{ width: 0 }}
@@ -177,7 +177,7 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
             animate="center"
             exit="exit"
             transition={transition}
-            className="h-full flex items-center justify-center px-6"
+            className="min-h-full flex items-center justify-center px-6 py-20"
           >
             <div className="max-w-2xl w-full text-center">
               <motion.h1
@@ -249,7 +249,7 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
             animate="center"
             exit="exit"
             transition={transition}
-            className="h-full flex items-center justify-center px-6"
+            className="min-h-full flex items-center justify-center px-6 py-20"
           >
             <div className="max-w-2xl w-full">
               {/* Question number */}
@@ -343,7 +343,7 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
             animate="center"
             exit="exit"
             transition={transition}
-            className="h-full flex items-center justify-center px-6"
+            className="min-h-full flex items-center justify-center px-6 py-20"
           >
             <div className="max-w-2xl w-full text-center">
               <motion.div
@@ -437,7 +437,7 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
       </AnimatePresence>
 
       {/* Persistent "Made with ByteForm" badge — bottom-left on all screens */}
-      <div className="absolute bottom-6 left-6 z-50">
+      <div className="fixed bottom-6 left-6 z-50">
         <PoweredByBadge />
       </div>
 
@@ -452,7 +452,7 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
             transition={{ duration: 0.2 }}
             role="alert"
             aria-live="assertive"
-            className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-[min(560px,calc(100%-3rem))]
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[min(560px,calc(100%-3rem))]
               flex items-start gap-3 px-4 py-3 rounded-lg border border-error/30
               bg-error/10 backdrop-blur-sm shadow-lg"
           >
@@ -512,7 +512,7 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
 
       {/* Bottom navigation */}
       {stage === "questions" && (
-        <div className="absolute bottom-6 right-6 flex items-center gap-2 z-50">
+        <div className="fixed bottom-6 right-6 flex items-center gap-2 z-50">
           <button
             onClick={goPrev}
             disabled={isFirst}

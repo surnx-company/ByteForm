@@ -40,7 +40,8 @@ export function LongText({ value, onChange, placeholder, onSubmit }: Props) {
         rows={3}
         className="w-full bg-transparent border-b-2 border-fg-dim focus:border-accent
           text-xl md:text-2xl font-light py-3 outline-none transition-colors
-          duration-200 placeholder:text-fg-dim/50 caret-accent resize-none"
+          duration-200 placeholder:text-fg-dim/50 caret-accent resize-none
+          overflow-hidden"
       />
       <p className="text-fg-dim text-sm mt-2">
         <kbd className="px-1.5 py-0.5 bg-bg-card rounded text-xs border border-border">Shift</kbd>
