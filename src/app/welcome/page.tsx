@@ -151,12 +151,9 @@ export default function WelcomePage() {
     >
       {/* Nav */}
       <nav
+        className="flex items-center justify-between px-5 sm:px-10"
         style={{
-          padding: "0 40px",
           height: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
           borderBottom: `0.5px solid ${WA(0.1)}`,
         }}
       >
@@ -207,7 +204,8 @@ export default function WelcomePage() {
 
       {/* Content */}
       <div
-        style={{ maxWidth: 680, margin: "0 auto", padding: "72px 40px 40px" }}
+        className="px-5 sm:px-10 pt-12 sm:pt-[72px] pb-10"
+        style={{ maxWidth: 680, margin: "0 auto" }}
       >
         {/* Greeting */}
         <div style={{ marginBottom: 56 }}>
@@ -275,22 +273,19 @@ export default function WelcomePage() {
             ({ icon, title, desc, cta, href, primary, disabled }) => (
               <div
                 key={title}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                 style={{
                   background: "white",
                   borderRadius: 14,
-                  padding: "24px 28px",
+                  padding: "20px 22px",
                   border: primary
                     ? `1.5px solid ${W}`
                     : `0.5px solid ${WA(0.1)}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 24,
                   opacity: disabled ? 0.5 : 1,
                 }}
               >
                 <div
-                  style={{ display: "flex", alignItems: "flex-start", gap: 18 }}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 16 }}
                 >
                   <div
                     style={{
@@ -325,6 +320,7 @@ export default function WelcomePage() {
                 </div>
                 {disabled ? (
                   <span
+                    className="self-start sm:self-auto"
                     style={{
                       fontSize: 12,
                       color: D,
@@ -341,9 +337,9 @@ export default function WelcomePage() {
                   <button
                     onClick={handleStartBuilding}
                     disabled={creating}
+                    className="self-start sm:self-auto"
                     style={{
                       fontSize: 13,
-                      whiteSpace: "nowrap",
                       flexShrink: 0,
                       padding: "9px 20px",
                       borderRadius: 7,
@@ -358,10 +354,10 @@ export default function WelcomePage() {
                 ) : (
                   <Link
                     href={href}
+                    className="self-start sm:self-auto"
                     style={{
                       fontSize: 13,
                       textDecoration: "none",
-                      whiteSpace: "nowrap",
                       flexShrink: 0,
                       padding: "9px 20px",
                       borderRadius: 7,
@@ -380,13 +376,11 @@ export default function WelcomePage() {
 
         {/* What to expect strip */}
         <div
+          className="grid grid-cols-1 sm:grid-cols-3 gap-5"
           style={{
             background: B,
             borderRadius: 14,
-            padding: "28px 32px",
-            display: "grid",
-            gridTemplateColumns: "repeat(3,minmax(0,1fr))",
-            gap: 24,
+            padding: "24px 28px",
           }}
         >
           {[
@@ -394,7 +388,7 @@ export default function WelcomePage() {
             ["2 min", "To build your first form"],
             ["Free", "No credit card needed"],
           ].map(([n, label]) => (
-            <div key={label} style={{ textAlign: "center" }}>
+            <div key={label} className="text-left sm:text-center">
               <div
                 style={{
                   ...serif,
