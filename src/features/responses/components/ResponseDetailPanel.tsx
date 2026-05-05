@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import type { Form } from "@/shared/types/form";
+import type { Form, Question } from "@/shared/types/form";
 import type { Database } from "@/shared/types/database";
 
 type Submission = Database["public"]["Tables"]["submissions"]["Row"];
@@ -22,8 +22,23 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function displayValue(value: unknown): string {
+function resolveDisplay(question: Question, value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
+
+  const choices = question.choices;
+
+  if (choices && choices.length > 0) {
+    if (Array.isArray(value)) {
+      const labels = value.map((v) => {
+        const match = choices.find((c) => c.value === String(v));
+        return match ? match.label : String(v);
+      });
+      return labels.length === 0 ? "—" : labels.join(", ");
+    }
+    const match = choices.find((c) => c.value === String(value));
+    if (match) return match.label;
+  }
+
   if (Array.isArray(value)) return value.length === 0 ? "—" : value.join(", ");
   return String(value);
 }
@@ -109,7 +124,7 @@ export function ResponseDetailPanel({ submission, form, onClose }: Props) {
               {form.questions.map((question, i) => {
                 const answers = submission.answers as Record<string, unknown>;
                 const raw = answers[question.id];
-                const display = displayValue(raw);
+                const display = resolveDisplay(question, raw);
                 const isEmpty = display === "—";
 
                 return (
