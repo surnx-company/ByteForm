@@ -13,5 +13,10 @@ export function validateAnswer(question: Question, value: AnswerValue): boolean 
     return EMAIL_RE.test(value);
   }
 
+  // Ranking is valid once all items are ordered (auto-initialised on mount)
+  if (question.type === "ranking") {
+    return Array.isArray(value) && value.length === (question.choices?.length ?? 0);
+  }
+
   return true;
 }
