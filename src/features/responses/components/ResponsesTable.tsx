@@ -66,7 +66,8 @@ function applySearch(submissions: Submission[], query: string): Submission[] {
 }
 
 /** Resolve a raw stored answer to a human-readable string.
- *  For choice questions the stored value is the slug — look up the label. */
+ *  For choice questions the stored value is the slug — look up the label.
+ *  For ranking, show "1. Label  2. Label …" to preserve order context. */
 function resolveDisplay(question: Question, value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
 
@@ -78,7 +79,12 @@ function resolveDisplay(question: Question, value: unknown): string {
         const match = choices.find((c) => c.value === String(v));
         return match ? match.label : String(v);
       });
-      return labels.length === 0 ? "—" : labels.join(", ");
+      if (labels.length === 0) return "—";
+      // Ranking: prefix each item with its position number
+      if (question.type === "ranking") {
+        return labels.map((l, i) => `${i + 1}. ${l}`).join("  ");
+      }
+      return labels.join(", ");
     }
     const match = choices.find((c) => c.value === String(value));
     if (match) return match.label;

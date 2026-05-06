@@ -15,6 +15,7 @@ import {
   DatePicker,
   FileUpload,
   Statement,
+  Ranking,
 } from "./questions";
 
 interface Props {
@@ -152,6 +153,16 @@ export function QuestionRenderer({ question, value, onChange, onSubmit, onAutoAd
 
     case "statement":
       return <Statement onSubmit={onAutoAdvance} />;
+
+    case "ranking":
+      return (
+        <Ranking
+          choices={question.choices ?? []}
+          value={(value as string[]) ?? []}
+          onChange={onChange}
+          onSubmit={onSubmit}
+        />
+      );
 
     default:
       return null;

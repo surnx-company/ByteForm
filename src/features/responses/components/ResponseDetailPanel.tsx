@@ -33,7 +33,11 @@ function resolveDisplay(question: Question, value: unknown): string {
         const match = choices.find((c) => c.value === String(v));
         return match ? match.label : String(v);
       });
-      return labels.length === 0 ? "—" : labels.join(", ");
+      if (labels.length === 0) return "—";
+      if (question.type === "ranking") {
+        return labels.map((l, i) => `${i + 1}. ${l}`).join("\n");
+      }
+      return labels.join(", ");
     }
     const match = choices.find((c) => c.value === String(value));
     if (match) return match.label;

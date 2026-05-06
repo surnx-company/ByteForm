@@ -11,3 +11,4 @@ export { NumberInput } from "./NumberInput";
 export { DatePicker } from "./DatePicker";
 export { FileUpload } from "./FileUpload";
 export { Statement } from "./Statement";
+export { Ranking } from "./Ranking";

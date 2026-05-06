@@ -11,7 +11,8 @@ export type QuestionType =
   | "number"
   | "date"
   | "file_upload"
-  | "statement";
+  | "statement"
+  | "ranking";
 
 export interface Choice {
   id: string;

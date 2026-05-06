@@ -107,15 +107,17 @@ function Toggle({
 function ChoicesEditor({
   choices,
   onChange,
+  label = "Choices",
 }: {
   choices: Question["choices"];
   onChange: (choices: Question["choices"]) => void;
+  label?: string;
 }) {
   if (!choices) return null;
 
   return (
     <div>
-      <FieldLabel>Choices</FieldLabel>
+      <FieldLabel>{label}</FieldLabel>
       <div className="space-y-2">
         {choices.map((choice, i) => (
           <div key={choice.id} className="flex items-center gap-2">
@@ -253,7 +255,7 @@ function ConditionalLogicEditor({
 }
 
 function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEditorProps) {
-  const hasChoices = ["multiple_choice", "checkboxes", "dropdown"].includes(question.type);
+  const hasChoices = ["multiple_choice", "checkboxes", "dropdown", "ranking"].includes(question.type);
 
   return (
     <div className="space-y-5">
@@ -264,7 +266,7 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
           onChange={(e) => {
             const newType = e.target.value as QuestionType;
             const updates: Partial<Question> = { type: newType };
-            if (["multiple_choice", "checkboxes", "dropdown"].includes(newType) && !question.choices) {
+            if (["multiple_choice", "checkboxes", "dropdown", "ranking"].includes(newType) && !question.choices) {
               updates.choices = [
                 { id: uuid(), label: "Option 1", value: "option_1" },
                 { id: uuid(), label: "Option 2", value: "option_2" },
@@ -325,6 +327,7 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
         <ChoicesEditor
           choices={question.choices}
           onChange={(choices) => onUpdate(question.id, { choices })}
+          label={question.type === "ranking" ? "Items to rank" : "Choices"}
         />
       )}
 

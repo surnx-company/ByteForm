@@ -15,6 +15,7 @@ const QUESTION_TYPES: [QuestionType, ...QuestionType[]] = [
   "date",
   "file_upload",
   "statement",
+  "ranking",
 ];
 
 const choiceSchema = z.object({

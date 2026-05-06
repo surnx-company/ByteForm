@@ -35,6 +35,15 @@ function createQuestion(type: QuestionType): Question {
           { id: uuid(), label: "Option 3", value: "option_3" },
         ],
       };
+    case "ranking":
+      return {
+        ...base,
+        choices: [
+          { id: uuid(), label: "Item 1", value: "item_1" },
+          { id: uuid(), label: "Item 2", value: "item_2" },
+          { id: uuid(), label: "Item 3", value: "item_3" },
+        ],
+      };
     case "rating":
       return { ...base, min: 0, max: 10 };
     case "star_rating":

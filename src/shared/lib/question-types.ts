@@ -16,6 +16,7 @@ export const QUESTION_TYPES: QuestionTypeInfo[] = [
   { type: "checkboxes", label: "Checkboxes", icon: "\u2610", category: "choice" },
   { type: "dropdown", label: "Dropdown", icon: "\u25BE", category: "choice" },
   { type: "yes_no", label: "Yes / No", icon: "\u2714", category: "choice" },
+  { type: "ranking", label: "Ranking", icon: "\u2195", category: "choice" },
   { type: "rating", label: "Rating (NPS)", icon: "\u2606", category: "rating" },
   { type: "star_rating", label: "Star Rating", icon: "\u2605", category: "rating" },
   { type: "date", label: "Date", icon: "\uD83D\uDCC5", category: "other" },
