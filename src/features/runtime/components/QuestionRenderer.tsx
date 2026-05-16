@@ -116,6 +116,20 @@ export function QuestionRenderer({
           onSubmit={onAutoAdvance}
           min={question.min ?? 0}
           max={question.max ?? 10}
+          lowLabel={question.lowLabel}
+          highLabel={question.highLabel}
+          onEditLowLabel={
+            editable
+              ? (lowLabel) =>
+                  editable.updateQuestion(question.id, { lowLabel })
+              : undefined
+          }
+          onEditHighLabel={
+            editable
+              ? (highLabel) =>
+                  editable.updateQuestion(question.id, { highLabel })
+              : undefined
+          }
         />
       );
 
