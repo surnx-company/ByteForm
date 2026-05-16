@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/shared/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { AnalyticsEvent, capture, identifyUser } from "@/shared/lib/analytics";
 
 const W = "#6B1A2A";
 const I = "#F7F3EC";
@@ -120,6 +121,8 @@ function LoginForm() {
         setError(error.message);
       } else if (data.session) {
         // Email confirmation is disabled in Supabase — user is signed in immediately.
+        identifyUser(data.session.user.id, { email: data.session.user.email ?? null });
+        capture(AnalyticsEvent.UserSignedUp, { method: "email" });
         router.push("/welcome");
         router.refresh();
       } else {
@@ -127,12 +130,16 @@ function LoginForm() {
         setMessage("Check your email for the confirmation link.");
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) setError(error.message);
       else {
+        if (data.user) {
+          identifyUser(data.user.id, { email: data.user.email ?? null });
+        }
+        capture(AnalyticsEvent.UserSignedIn, { method: "email" });
         router.push("/dashboard");
         router.refresh();
       }
@@ -142,6 +149,9 @@ function LoginForm() {
   }
 
   async function handleGoogleLogin() {
+    // The actual sign-in event is captured server-side from /auth/callback so
+    // we don't double-count if the redirect dance reloads the page.
+    capture(AnalyticsEvent.UserSignedIn, { method: "google", initiated: true });
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
