@@ -2,19 +2,23 @@
 
 import { useEffect, useCallback } from "react";
 import type { Choice } from "@/shared/types/form";
+import { EditableText } from "@/features/builder/components/EditableText";
 
 interface Props {
   choices: Choice[];
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onEditChoiceLabel?: (choiceId: string, label: string) => void;
 }
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-export function MultipleChoice({ choices, value, onChange, onSubmit }: Props) {
+export function MultipleChoice({ choices, value, onChange, onSubmit, onEditChoiceLabel }: Props) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.isContentEditable) return;
       const idx = LETTERS.indexOf(e.key.toUpperCase());
       if (idx >= 0 && idx < choices.length) {
         onChange(choices[idx].value);
@@ -35,10 +39,14 @@ export function MultipleChoice({ choices, value, onChange, onSubmit }: Props) {
         return (
           <button
             key={choice.id}
-            onClick={() => {
-              onChange(choice.value);
-              setTimeout(onSubmit, 200);
-            }}
+            onClick={
+              onEditChoiceLabel
+                ? undefined
+                : () => {
+                    onChange(choice.value);
+                    setTimeout(onSubmit, 200);
+                  }
+            }
             className={`
               group w-full flex items-center gap-4 px-5 py-4 rounded-lg
               border text-left transition-all duration-200
@@ -62,7 +70,17 @@ export function MultipleChoice({ choices, value, onChange, onSubmit }: Props) {
             >
               {LETTERS[i]}
             </span>
-            <span className="text-lg">{choice.label}</span>
+            {onEditChoiceLabel ? (
+              <EditableText
+                value={choice.label}
+                onCommit={(label) => onEditChoiceLabel(choice.id, label)}
+                placeholder={`Option ${i + 1}`}
+                ariaLabel={`Option ${i + 1} label`}
+                className="text-lg flex-1 px-1 -mx-1"
+              />
+            ) : (
+              <span className="text-lg">{choice.label}</span>
+            )}
           </button>
         );
       })}

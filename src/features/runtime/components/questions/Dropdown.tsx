@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Choice } from "@/shared/types/form";
+import { EditableText } from "@/features/builder/components/EditableText";
 
 interface Props {
   choices: Choice[];
@@ -9,9 +10,10 @@ interface Props {
   onChange: (value: string) => void;
   onSubmit: () => void;
   placeholder?: string;
+  onEditChoiceLabel?: (choiceId: string, label: string) => void;
 }
 
-export function Dropdown({ choices, value, onChange, onSubmit, placeholder }: Props) {
+export function Dropdown({ choices, value, onChange, onSubmit, placeholder, onEditChoiceLabel }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,17 +104,31 @@ export function Dropdown({ choices, value, onChange, onSubmit, placeholder }: Pr
           {choices.map((choice, i) => (
             <button
               key={choice.id}
-              onClick={() => {
-                onChange(choice.value);
-                setIsOpen(false);
-              }}
+              onClick={
+                onEditChoiceLabel
+                  ? undefined
+                  : () => {
+                      onChange(choice.value);
+                      setIsOpen(false);
+                    }
+              }
               className={`
                 w-full px-5 py-3 text-left text-lg transition-colors duration-100
                 ${choice.value === value ? "text-accent bg-accent-glow" : "text-fg"}
                 ${highlightIndex === i ? "bg-border/50" : "hover:bg-border/30"}
               `}
             >
-              {choice.label}
+              {onEditChoiceLabel ? (
+                <EditableText
+                  value={choice.label}
+                  onCommit={(label) => onEditChoiceLabel(choice.id, label)}
+                  placeholder={`Option ${i + 1}`}
+                  ariaLabel={`Option ${i + 1} label`}
+                  className="block px-1 -mx-1"
+                />
+              ) : (
+                choice.label
+              )}
             </button>
           ))}
         </div>

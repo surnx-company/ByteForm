@@ -179,3 +179,17 @@ input:-webkit-autofill:focus {
     @apply font-sans;
   }
 }
+
+/* Inline editable text in the builder preview pane.
+   Shows a placeholder when empty/unfocused and a subtle hover affordance. */
+.editable-text {
+  cursor: text;
+}
+.editable-text[data-empty="true"]:not(:focus)::before {
+  content: attr(data-placeholder);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.editable-text:hover:not(:focus) {
+  background: rgba(107, 26, 42, 0.06);
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Question, AnswerValue } from "@/shared/types/form";
+import type { Question, AnswerValue, Choice } from "@/shared/types/form";
 import {
   ShortText,
   LongText,
@@ -17,6 +17,7 @@ import {
   Statement,
   Ranking,
 } from "./questions";
+import type { FormViewEditable } from "./FormView";
 
 interface Props {
   question: Question;
@@ -24,9 +25,25 @@ interface Props {
   onChange: (value: AnswerValue) => void;
   onSubmit: () => void;
   onAutoAdvance: () => void;
+  editable?: FormViewEditable;
 }
 
-export function QuestionRenderer({ question, value, onChange, onSubmit, onAutoAdvance }: Props) {
+export function QuestionRenderer({
+  question,
+  value,
+  onChange,
+  onSubmit,
+  onAutoAdvance,
+  editable,
+}: Props) {
+  const updateChoiceLabel = editable
+    ? (choiceId: string, label: string) => {
+        const next: Choice[] = (question.choices ?? []).map((c) =>
+          c.id === choiceId ? { ...c, label } : c
+        );
+        editable.updateQuestion(question.id, { choices: next });
+      }
+    : undefined;
   switch (question.type) {
     case "short_text":
       return (
@@ -55,6 +72,7 @@ export function QuestionRenderer({ question, value, onChange, onSubmit, onAutoAd
           value={(value as string) ?? ""}
           onChange={onChange}
           onSubmit={onAutoAdvance}
+          onEditChoiceLabel={updateChoiceLabel}
         />
       );
 
@@ -65,6 +83,7 @@ export function QuestionRenderer({ question, value, onChange, onSubmit, onAutoAd
           value={(value as string[]) ?? []}
           onChange={onChange}
           onSubmit={onSubmit}
+          onEditChoiceLabel={updateChoiceLabel}
         />
       );
 
@@ -76,6 +95,7 @@ export function QuestionRenderer({ question, value, onChange, onSubmit, onAutoAd
           onChange={onChange}
           onSubmit={onSubmit}
           placeholder={question.placeholder}
+          onEditChoiceLabel={updateChoiceLabel}
         />
       );
 
@@ -161,6 +181,7 @@ export function QuestionRenderer({ question, value, onChange, onSubmit, onAutoAd
           value={(value as string[]) ?? []}
           onChange={onChange}
           onSubmit={onSubmit}
+          onEditChoiceLabel={updateChoiceLabel}
         />
       );
 
