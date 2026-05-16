@@ -2,15 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Choice } from "@/shared/types/form";
+import { EditableText } from "@/features/builder/components/EditableText";
 
 interface Props {
   choices: Choice[];
   value: string[]; // ordered array of choice values, most important first
   onChange: (value: string[]) => void;
   onSubmit: () => void;
+  onEditChoiceLabel?: (choiceId: string, label: string) => void;
 }
 
-export function Ranking({ choices, value, onChange }: Props) {
+export function Ranking({ choices, value, onChange, onEditChoiceLabel }: Props) {
   // Build the ordered list from value.
   // Falls back to choices default order if values don't fully resolve
   // (handles: first render, items added/removed, label edits that change slugs).
@@ -128,7 +130,17 @@ export function Ranking({ choices, value, onChange }: Props) {
           </span>
 
           {/* Label */}
-          <span className="flex-1 text-fg text-base leading-snug">{choice.label}</span>
+          {onEditChoiceLabel ? (
+            <EditableText
+              value={choice.label}
+              onCommit={(label) => onEditChoiceLabel(choice.id, label)}
+              placeholder={`Item ${i + 1}`}
+              ariaLabel={`Item ${i + 1} label`}
+              className="flex-1 text-fg text-base leading-snug px-1 -mx-1"
+            />
+          ) : (
+            <span className="flex-1 text-fg text-base leading-snug">{choice.label}</span>
+          )}
 
           {/* Up / Down buttons — always visible, bigger on mobile */}
           <div className="flex flex-col gap-0.5 flex-shrink-0">

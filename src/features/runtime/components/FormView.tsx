@@ -2,16 +2,24 @@
 
 import { useEffect, useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Form } from "@/shared/types/form";
+import type { Form, Question, WelcomeScreen, ThankYouScreen } from "@/shared/types/form";
 import { useFormEngine } from "../hooks/useFormEngine";
 import { QuestionRenderer } from "./QuestionRenderer";
 import { PoweredByBadge } from "./PoweredByBadge";
+import { EditableText } from "@/features/builder/components/EditableText";
+
+export interface FormViewEditable {
+  updateWelcomeScreen: (updates: Partial<WelcomeScreen>) => void;
+  updateThankYouScreen: (updates: Partial<ThankYouScreen>) => void;
+  updateQuestion: (id: string, updates: Partial<Question>) => void;
+}
 
 interface Props {
   form: Form;
   onStart?: () => void;
   onSubmit?: (answers: Record<string, unknown>) => void | Promise<void>;
   jumpTo?: string;
+  editable?: FormViewEditable;
 }
 
 const DEFAULT_SUBMIT_ERROR =
@@ -37,7 +45,7 @@ const transition = {
   opacity: { duration: 0.25 },
 };
 
-export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
+export function FormView({ form, onStart, onSubmit, jumpTo, editable }: Props) {
   const engine = useFormEngine(form, jumpTo);
   const {
     stage,
@@ -126,10 +134,12 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
   // Global keyboard navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      const tag = (e.target as HTMLElement).tagName;
-      const isInput = tag === "INPUT" || tag === "TEXTAREA";
+      const target = e.target as HTMLElement;
+      const tag = target.tagName;
+      const isInput =
+        tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable;
 
-      if (stage === "welcome" && e.key === "Enter") {
+      if (stage === "welcome" && e.key === "Enter" && !isInput) {
         e.preventDefault();
         handleStartForm();
         return;
@@ -186,16 +196,39 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-4xl md:text-6xl font-bold tracking-tight"
               >
-                {form.welcomeScreen.title}
+                {editable ? (
+                  <EditableText
+                    value={form.welcomeScreen.title}
+                    onCommit={(title) => editable.updateWelcomeScreen({ title })}
+                    placeholder="Welcome message"
+                    ariaLabel="Welcome title"
+                    className="inline-block min-w-[1ch] px-1 -mx-1"
+                  />
+                ) : (
+                  form.welcomeScreen.title
+                )}
               </motion.h1>
-              {form.welcomeScreen.description && (
+              {(editable || form.welcomeScreen.description) && (
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25, duration: 0.5 }}
                   className="mt-6 text-lg md:text-xl text-fg-muted leading-relaxed"
                 >
-                  {form.welcomeScreen.description}
+                  {editable ? (
+                    <EditableText
+                      value={form.welcomeScreen.description ?? ""}
+                      onCommit={(description) =>
+                        editable.updateWelcomeScreen({ description })
+                      }
+                      placeholder="Add a description (optional)"
+                      ariaLabel="Welcome description"
+                      multiline
+                      className="inline-block min-w-[1ch] px-1 -mx-1"
+                    />
+                  ) : (
+                    form.welcomeScreen.description
+                  )}
                 </motion.p>
               )}
               <motion.div
@@ -205,13 +238,25 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
                 className="mt-10"
               >
                 <button
-                  onClick={handleStartForm}
+                  onClick={editable ? undefined : handleStartForm}
                   className="group inline-flex items-center gap-3 px-8 py-4 rounded-lg
                     bg-accent hover:bg-accent-hover text-white text-lg font-medium
                     transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
                     shadow-lg shadow-accent/20"
                 >
-                  {form.welcomeScreen.buttonText}
+                  {editable ? (
+                    <EditableText
+                      value={form.welcomeScreen.buttonText}
+                      onCommit={(buttonText) =>
+                        editable.updateWelcomeScreen({ buttonText })
+                      }
+                      placeholder="Start"
+                      ariaLabel="Welcome button label"
+                      className="min-w-[2ch]"
+                    />
+                  ) : (
+                    form.welcomeScreen.buttonText
+                  )}
                   <svg
                     width="20"
                     height="20"
@@ -267,27 +312,55 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
 
               {/* Question title */}
               <h2 className="text-2xl md:text-3xl font-semibold leading-snug mb-2">
-                {currentQuestion.title}
+                {editable ? (
+                  <EditableText
+                    value={currentQuestion.title}
+                    onCommit={(title) =>
+                      editable.updateQuestion(currentQuestion.id, { title })
+                    }
+                    placeholder="Your question"
+                    ariaLabel="Question title"
+                    className="inline-block min-w-[1ch] px-1 -mx-1"
+                  />
+                ) : (
+                  currentQuestion.title
+                )}
                 {currentQuestion.required && (
                   <span className="text-error ml-1">*</span>
                 )}
               </h2>
 
               {/* Description */}
-              {currentQuestion.description && (
+              {(editable || currentQuestion.description) && (
                 <p className="text-fg-muted text-lg mb-8">
-                  {currentQuestion.description}
+                  {editable ? (
+                    <EditableText
+                      value={currentQuestion.description ?? ""}
+                      onCommit={(description) =>
+                        editable.updateQuestion(currentQuestion.id, {
+                          description,
+                        })
+                      }
+                      placeholder="Add a description (optional)"
+                      ariaLabel="Question description"
+                      multiline
+                      className="inline-block min-w-[1ch] px-1 -mx-1"
+                    />
+                  ) : (
+                    currentQuestion.description
+                  )}
                 </p>
               )}
 
               {/* Question body */}
-              <div className={currentQuestion.description ? "" : "mt-8"}>
+              <div className={currentQuestion.description || editable ? "" : "mt-8"}>
                 <QuestionRenderer
                   question={currentQuestion}
                   value={answers[currentQuestion.id] ?? null}
                   onChange={(val) => setAnswer(currentQuestion.id, val)}
                   onSubmit={handleSubmit}
                   onAutoAdvance={handleAutoAdvance}
+                  editable={editable}
                 />
               </div>
 
@@ -379,17 +452,42 @@ export function FormView({ form, onStart, onSubmit, jumpTo }: Props) {
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="text-4xl md:text-5xl font-bold tracking-tight"
               >
-                {form.thankYouScreen.title}
+                {editable ? (
+                  <EditableText
+                    value={form.thankYouScreen.title}
+                    onCommit={(title) =>
+                      editable.updateThankYouScreen({ title })
+                    }
+                    placeholder="Thank you!"
+                    ariaLabel="Thank you title"
+                    className="inline-block min-w-[1ch] px-1 -mx-1"
+                  />
+                ) : (
+                  form.thankYouScreen.title
+                )}
               </motion.h1>
 
-              {form.thankYouScreen.description && (
+              {(editable || form.thankYouScreen.description) && (
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.45, duration: 0.5 }}
                   className="mt-6 text-lg md:text-xl text-fg-muted leading-relaxed"
                 >
-                  {form.thankYouScreen.description}
+                  {editable ? (
+                    <EditableText
+                      value={form.thankYouScreen.description ?? ""}
+                      onCommit={(description) =>
+                        editable.updateThankYouScreen({ description })
+                      }
+                      placeholder="Add a description (optional)"
+                      ariaLabel="Thank you description"
+                      multiline
+                      className="inline-block min-w-[1ch] px-1 -mx-1"
+                    />
+                  ) : (
+                    form.thankYouScreen.description
+                  )}
                 </motion.p>
               )}
 
