@@ -36,6 +36,10 @@ export interface Question {
   choices?: Choice[];
   min?: number;
   max?: number;
+  /** Label shown under the low end of a rating scale (e.g. "Not likely"). */
+  lowLabel?: string;
+  /** Label shown under the high end of a rating scale (e.g. "Very likely"). */
+  highLabel?: string;
   maxFileSize?: number; // in MB
   acceptedFileTypes?: string[];
   conditionalLogic?: ConditionalLogic;

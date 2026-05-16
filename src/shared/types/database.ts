@@ -26,6 +26,8 @@ export interface Database {
             choices?: Array<{ id: string; label: string; value: string }>;
             min?: number;
             max?: number;
+            lowLabel?: string;
+            highLabel?: string;
             maxFileSize?: number;
             acceptedFileTypes?: string[];
             conditionalLogic?: {
