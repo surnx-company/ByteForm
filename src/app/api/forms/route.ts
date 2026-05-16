@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
 import { createFormSchema } from "@/shared/lib/validation/forms";
+import { captureServerEvent } from "@/shared/lib/analytics/posthog-server";
+import { AnalyticsEvent } from "@/shared/lib/analytics/events";
 
 export async function GET() {
   const supabase = await createClient();
@@ -68,6 +70,15 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await captureServerEvent({
+    distinctId: user.id,
+    event: AnalyticsEvent.FormCreated,
+    properties: {
+      form_id: data.id,
+      question_count: Array.isArray(data.questions) ? data.questions.length : 0,
+    },
+  });
 
   return NextResponse.json(data, { status: 201 });
 }

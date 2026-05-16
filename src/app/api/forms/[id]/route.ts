@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/lib/supabase/server";
 import { updateFormSchema } from "@/shared/lib/validation/forms";
+import { captureServerEvent } from "@/shared/lib/analytics/posthog-server";
+import { AnalyticsEvent } from "@/shared/lib/analytics/events";
 
 export async function GET(
   _request: Request,
@@ -64,6 +66,15 @@ export async function PUT(
     update.redirect_url = body.redirectUrl === "" ? null : body.redirectUrl;
   }
 
+  // Read the prior state so we can fire publish/unpublish events only on
+  // actual transitions, not on every PUT that happens to include the flag.
+  const { data: previous } = await supabase
+    .from("forms")
+    .select("is_published")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
   const { data, error } = await supabase
     .from("forms")
     .update(update)
@@ -74,6 +85,20 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (
+    previous &&
+    body.isPublished !== undefined &&
+    previous.is_published !== data.is_published
+  ) {
+    await captureServerEvent({
+      distinctId: user.id,
+      event: data.is_published
+        ? AnalyticsEvent.FormPublished
+        : AnalyticsEvent.FormUnpublished,
+      properties: { form_id: data.id },
+    });
   }
 
   return NextResponse.json(data);
