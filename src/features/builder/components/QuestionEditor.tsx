@@ -4,6 +4,10 @@ import { memo } from "react";
 import { v4 as uuid } from "uuid";
 import type { Question, QuestionType, WelcomeScreen, ThankYouScreen } from "@/shared/types/form";
 import { QUESTION_TYPES } from "@/shared/lib/question-types";
+import {
+  RATING_DEFAULT_LOW_LABEL,
+  RATING_DEFAULT_HIGH_LABEL,
+} from "@/features/runtime/components/questions/Rating";
 
 interface QuestionEditorProps {
   question: Question;
@@ -332,28 +336,52 @@ function QuestionEditorInner({ question, allQuestions, onUpdate }: QuestionEdito
       )}
 
       {question.type === "rating" && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>Min</FieldLabel>
-            <input
-              type="number"
-              value={question.min ?? 0}
-              onChange={(e) => onUpdate(question.id, { min: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
-                text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
-            />
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Min</FieldLabel>
+              <input
+                type="number"
+                value={question.min ?? 0}
+                onChange={(e) => onUpdate(question.id, { min: parseInt(e.target.value) || 0 })}
+                className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+                  text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
+              />
+            </div>
+            <div>
+              <FieldLabel>Max</FieldLabel>
+              <input
+                type="number"
+                value={question.max ?? 10}
+                onChange={(e) => onUpdate(question.id, { max: parseInt(e.target.value) || 10 })}
+                className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
+                  text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
+              />
+            </div>
           </div>
-          <div>
-            <FieldLabel>Max</FieldLabel>
-            <input
-              type="number"
-              value={question.max ?? 10}
-              onChange={(e) => onUpdate(question.id, { max: parseInt(e.target.value) || 10 })}
-              className="w-full px-3 py-2 rounded-md border border-[#6B1A2A]/12 bg-[#F7F3EC] text-sm
-                text-[#1C1410] focus:border-[#6B1A2A] focus:ring-1 focus:ring-[#6B1A2A]/20"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Low end label</FieldLabel>
+              <TextInput
+                value={question.lowLabel ?? ""}
+                onChange={(lowLabel) =>
+                  onUpdate(question.id, { lowLabel: lowLabel || undefined })
+                }
+                placeholder={RATING_DEFAULT_LOW_LABEL}
+              />
+            </div>
+            <div>
+              <FieldLabel>High end label</FieldLabel>
+              <TextInput
+                value={question.highLabel ?? ""}
+                onChange={(highLabel) =>
+                  onUpdate(question.id, { highLabel: highLabel || undefined })
+                }
+                placeholder={RATING_DEFAULT_HIGH_LABEL}
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {question.type === "star_rating" && (
