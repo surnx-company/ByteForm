@@ -680,7 +680,7 @@ export function SaveableFormBuilder({ initialForm }: Props) {
               background: "var(--color-bg)",
             }}
           >
-            {form.questions.length === 0 ? (
+            {form.questions.length === 0 && !editingScreen ? (
               <div
                 style={{
                   position: "absolute",
