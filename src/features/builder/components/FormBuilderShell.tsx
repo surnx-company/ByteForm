@@ -748,6 +748,11 @@ export function SaveableFormBuilder({ initialForm }: Props) {
                         ? "thankyou"
                         : (selectedId ?? undefined)
                   }
+                  editable={{
+                    updateWelcomeScreen,
+                    updateThankYouScreen,
+                    updateQuestion,
+                  }}
                 />
               </div>
             )}
